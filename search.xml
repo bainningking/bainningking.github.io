@@ -1,27 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Hello World</title>
-    <url>/2022/05/09/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+    <title>pandas如何对每行进行操作（apply函数用法）</title>
+    <url>/2022/05/11/20220511_pandas%E5%A6%82%E4%BD%95%E5%AF%B9%E6%AF%8F%E8%A1%8C%E8%BF%9B%E8%A1%8C%E6%93%8D%E4%BD%9C%EF%BC%88apply%E5%87%BD%E6%95%B0%E7%94%A8%E6%B3%95%EF%BC%89/</url>
+    <content><![CDATA[<hr>
+<h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p>在对dataframe做处理时，有个需求需要<strong>对dataframe的每一行的不同列进行操作</strong>，如何做到呢？</p>
+<p>经过搜索，发现pandas内部的apply函数可以完美解决这个问题，但是网上的示例不够清晰，特别是每一行作为参数要写吗？如果要用到外部参数又该怎么写？</p>
+<p>在此记录下学习过程，希望对看到这篇博客的你也有帮助。</p>
+<h1 id="apply函数的使用"><a href="#apply函数的使用" class="headerlink" title="apply函数的使用"></a>apply函数的使用</h1><h2 id="源码查看"><a href="#源码查看" class="headerlink" title="源码查看"></a>源码查看</h2><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220511194028441.png" alt="image-20220511194028441"></p>
+<p>经过查看引用，发现apply函数可以对dataframe和Series类型使用，此处我们查看dataframe的apply：</p>
+<span id="more"></span>
 
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">apply</span>(<span class="params">self, func, axis=<span class="number">0</span>, raw=<span class="literal">False</span>, result_type=<span class="literal">None</span>, args=(<span class="params"></span>), **kwds</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    Apply a function along an axis of the DataFrame.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Objects passed to the function are Series objects whose index is</span></span><br><span class="line"><span class="string">    either the DataFrame&#x27;s index (``axis=0``) or the DataFrame&#x27;s columns</span></span><br><span class="line"><span class="string">    (``axis=1``). By default (``result_type=None``), the final return type</span></span><br><span class="line"><span class="string">    is inferred from the return type of the applied function. Otherwise,</span></span><br><span class="line"><span class="string">    it depends on the `result_type` argument.</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>通过函数介绍，我们知道了以下信息：</p>
+<ol>
+<li>apply会将自定义的func函数应用在dataframe的每列或者每行上面。</li>
+<li>func接收的是每列或者每行转换成的一个Series对象，此对象的索引是行索引（对df每列操作时）或者列索引（对每行操作时），<strong>axis&#x3D;0代表对每行操作，axis&#x3D;1代表对每列操作</strong>。</li>
+<li>apply函数的返回仍是一个Series对象，索引不变，值取决于自定义函数func的返回类型。如果定义了result_type参数，则返回类型根据此参数执行变化。</li>
+</ol>
+<h2 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h2><p>由于我要解决的问题是对每行进行带参数的操作，经过搜索和尝试，最终应用如下：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 新建一个示例dataframe，用于测试</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>df = pd.DataFrame([[<span class="number">4</span>, <span class="number">9</span>]] * <span class="number">3</span>, columns=[<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;B&#x27;</span>])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>df</span><br><span class="line">   A  B</span><br><span class="line"><span class="number">0</span>  <span class="number">4</span>  <span class="number">9</span></span><br><span class="line"><span class="number">1</span>  <span class="number">4</span>  <span class="number">9</span></span><br><span class="line"><span class="number">2</span>  <span class="number">4</span>  <span class="number">9</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 0.首先定义一个函数，此函数要对df的每行进行操作</span></span><br><span class="line"><span class="comment"># 1.需要重点说明的就是fun1的第一个形参就是df的每一行，可以把此行当做字典，键就是列名；</span></span><br><span class="line"><span class="comment"># 2.在此之后的形参才是apply函数中args的参数，即我们要传入的外部参数</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fun1</span>(<span class="params">row, num</span>):  <span class="comment"># row是dataframe的每一行，num是外部要用的参数</span></span><br><span class="line">    <span class="keyword">return</span> row[<span class="string">&#x27;A&#x27;</span>] + row[<span class="string">&#x27;B&#x27;</span>] &gt; num</span><br><span class="line"></span><br><span class="line"><span class="comment"># 0.因为是对每行操作，所以axis=1,fun1的首个参数为row,如果axis=0,row用column表示更易理解</span></span><br><span class="line"><span class="comment"># 1.fun1的参数在args里面传，并且不用传递row，这个是默认作为第一个参数的</span></span><br><span class="line"><span class="comment"># 2.args必须是个元组，如果你的参数只有一个，那么必须写出如下形式(10,)，因为(10)不是元组，而是int</span></span><br><span class="line"><span class="comment"># 3.如果传多个参数则不用在最后写逗号</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = df.apply(fun1, args=(<span class="number">10</span>,), axis=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 我们将结果打印，看下apply返回的值</span></span><br><span class="line"><span class="comment"># 可见是类似Series的数据，它的索引与原始df相同，值与fun1函数的返回相同</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span>(a)</span><br><span class="line"><span class="number">0</span>    <span class="literal">True</span></span><br><span class="line"><span class="number">1</span>    <span class="literal">True</span></span><br><span class="line"><span class="number">2</span>    <span class="literal">True</span></span><br><span class="line">dtype: <span class="built_in">bool</span></span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>1.一般对于<strong>无需传递外部参数</strong>的<strong>一维可迭代对象</strong>（Series,list），一般使用map(lambda x: 函数体)的形式就可以对单一元素对象进行操作了；</p>
+<p>2.对于dataframe这一类二维表，需要对其中的每个单一维度（每行或者每列）进行操作，apply函数可以说是瑞士军刀般的解决方案了。</p>
+<p>3.在实际使用过程中其实我还想用当前行与其上一行进行逻辑操作，但是没找到什么好的方法，如有思路，还请指教。</p>
+<p>原创不易，如果觉得有点用，希望可以<strong>点个赞</strong>，拜谢各位老铁！</p>
 ]]></content>
-  </entry>
-  <entry>
-    <title></title>
-    <url>/2022/05/10/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/</url>
-    <content><![CDATA[<p>​—<br>title: 我的第一篇博客<br>date: 2022-05-10 11:10:05<br>tags:搭建博客<br>​—<br>《九歌 国殇》<br>操吴戈兮被犀甲，车错毂兮短兵接。<br>旌蔽日兮敌若云，矢交坠兮士争先。<br>凌余阵兮躐余行，左骖殪兮右刃伤。<br>霾两轮兮絷四马，援玉枹兮击鸣鼓。<br>天时怼兮威灵怒，严杀尽兮弃原野。<br>出不入兮往不反，平原忽兮路超远。<br>带长剑兮挟秦弓，首身离兮心不惩。<br>诚既勇兮又以武，终刚强兮不可凌。<br>身既死兮神以灵，魂魄毅兮为鬼雄。</p>
-]]></content>
+      <categories>
+        <category>问题解决</category>
+        <category>pandas</category>
+      </categories>
+      <tags>
+        <tag>pandas</tag>
+      </tags>
   </entry>
 </search>
