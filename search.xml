@@ -25,7 +25,6 @@
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>1.一般对于<strong>无需传递外部参数</strong>的<strong>一维可迭代对象</strong>（Series,list），一般使用map(lambda x: 函数体)的形式就可以对单一元素对象进行操作了；</p>
 <p>2.对于dataframe这一类二维表，需要对其中的每个单一维度（每行或者每列）进行操作，apply函数可以说是瑞士军刀般的解决方案了。</p>
 <p>3.在实际使用过程中其实我还想用当前行与其上一行进行逻辑操作，但是没找到什么好的方法，如有思路，还请指教。</p>
-<p>原创不易，如果觉得有点用，希望可以<strong>点个赞</strong>，拜谢各位老铁！</p>
 ]]></content>
       <categories>
         <category>问题解决</category>
