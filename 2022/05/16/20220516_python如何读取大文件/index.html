@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.1.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="楔子在一次面试过程中，主考官提出了问题：如何使用python读取大文件 而我一般知道： 1.一般读取、操作文件都是整体读取到内存中，所以在内存不够大的时候，读取大文件会造成非常耗费时间+“内存溢出”的问题 2.我在工作场景中一般读取文件都是使用pd.read_csv()这个pandas的命令，因此只回答了这个方法内置了chunksize参数,可以用于按照指定行数读取文件（返回一个可迭代对象，每次">
+<meta property="og:type" content="article">
+<meta property="og:title" content="python如何读取大文件">
+<meta property="og:url" content="http://example.com/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/index.html">
+<meta property="og:site_name" content="Bain的博客">
+<meta property="og:description" content="楔子在一次面试过程中，主考官提出了问题：如何使用python读取大文件 而我一般知道： 1.一般读取、操作文件都是整体读取到内存中，所以在内存不够大的时候，读取大文件会造成非常耗费时间+“内存溢出”的问题 2.我在工作场景中一般读取文件都是使用pd.read_csv()这个pandas的命令，因此只回答了这个方法内置了chunksize参数,可以用于按照指定行数读取文件（返回一个可迭代对象，每次">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-16T11:30:00.000Z">
+<meta property="article:modified_time" content="2022-05-16T11:55:36.726Z">
+<meta property="article:author" content="Bain">
+<meta property="article:tag" content="面试问题">
+<meta property="article:tag" content="大文件">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://example.com/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/","path":"2022/05/16/20220516_python如何读取大文件/","title":"python如何读取大文件"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>python如何读取大文件 | Bain的博客</title>
+  
+
+
+
+
+<link rel="dns-prefetch" href="waline-server-kohl.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Bain的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">种一棵树最好的时间是十年前，其次是现在。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A5%94%E5%AD%90"><span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#python%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6%E6%9C%80%E5%B8%B8%E7%94%A8%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%96%B9%E6%B3%95"><span class="nav-text">python读取大文件最常用的两种方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%92%88%E5%AF%B9%E5%A4%9A%E8%A1%8C%E5%A4%A7%E6%96%87%E4%BB%B6"><span class="nav-text">针对多行大文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%92%88%E5%AF%B9%E5%8D%95%E8%A1%8C%E5%A4%A7%E6%96%87%E4%BB%B6"><span class="nav-text">针对单行大文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85%EF%BC%9A"><span class="nav-text">知识补充：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#partial%E5%87%BD%E6%95%B0%E7%9A%84%E8%A7%A3%E9%87%8A"><span class="nav-text">partial函数的解释</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#iter%E5%87%BD%E6%95%B0%E7%9A%84%E8%A7%A3%E9%87%8A"><span class="nav-text">iter函数的解释</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Bain"
+      src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513105042.png">
+  <p class="site-author-name" itemprop="name">Bain</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/bainningking" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;bainningking" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:bainningking@gmail.com" title="E-Mail → mailto:bainningking@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513105042.png">
+      <meta itemprop="name" content="Bain">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bain的博客">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="python如何读取大文件 | Bain的博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          python如何读取大文件
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-05-16 19:30:00 / 修改时间：19:55:36" itemprop="dateCreated datePublished" datetime="2022-05-16T19:30:00+08:00">2022-05-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <hr>
+<h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p>在一次面试过程中，主考官提出了问题：如何使用python读取大文件</p>
+<p>而我一般知道：</p>
+<p>1.一般读取、操作文件都是整体读取到内存中，所以在内存不够大的时候，读取大文件会造成非常耗费时间+“内存溢出”的问题</p>
+<p>2.我在工作场景中一般读取文件都是使用pd.read_csv()这个pandas的命令，因此只回答了这个方法内置了chunksize参数,可以用于按照指定行数读取文件（返回一个可迭代对象，每次迭代一个分块），每个分块都是dataframe，且每个dataframe的行数是chunksize。</p>
+<p>因此，今天专门去搜索了相关的资料，总结如下。</p>
+<h1 id="python读取大文件最常用的两种方法"><a href="#python读取大文件最常用的两种方法" class="headerlink" title="python读取大文件最常用的两种方法"></a>python读取大文件最常用的两种方法</h1><p>通常面对的大文件有两种形式：</p>
+<ul>
+<li><p>多行大文件，一般里面存放的是<strong>字符串（普通文本）</strong></p>
+</li>
+<li><p>单行大文件，一般里面存放的是<strong>字节串（二进制流）</strong></p>
+</li>
+</ul>
+<p>因此，在经过面向搜索引擎编程后，总结了最有针对性+最优+最简的两种方法分别针对两种情况：</p>
+<h2 id="针对多行大文件"><a href="#针对多行大文件" class="headerlink" title="针对多行大文件"></a>针对多行大文件</h2><span id="more"></span>
+
+<p>使用open的基础方法：open打开的是一个按行迭代的可迭代对象，通过对齐进行遍历，即可一行一行的读取文件，避免一次占用较大内存，底层内置了io缓存和内存的管理，无需使用者关心。</p>
+<p>with句柄作为上下文管理器，负责打开和关闭文件（包括在内部块中引发异常时）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># for line in f 会将文件对象 f 视为一个可迭代的数据类型,自动使用 IO 缓存和内存管理</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;filename&#x27;</span>, <span class="string">&#x27;rt&#x27;</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> f:</span><br><span class="line">        do_something(line)</span><br></pre></td></tr></table></figure>
+
+<h2 id="针对单行大文件"><a href="#针对单行大文件" class="headerlink" title="针对单行大文件"></a>针对单行大文件</h2><p>上面的open方法解决不了的一个问题是：当大文件只有一行时该怎么办</p>
+<p>因此，此方法借助文件对象的read(size&#x3D;1024*8)方法，按数据的大小进行分块读取，size的单位是比特：bytes</p>
+<p>借助patial方法和iter方法更pythonic的实现这个功能：</p>
+<ul>
+<li>functools.partial(io.read,size)用来创建一个每次被调用时从文件中读取固定数目字节的<strong>可调用对象</strong>,他接收两个参数，一个是函数，一个是函数参数，返回的是每次调用此函数的返回对象。因此，一般使用返回迭代器的函数+参数作为partial的函数输入。</li>
+<li>iter()函数有一个鲜为人知的特性就是，如果你给它传递一个可调用对象和一个标记值，它会创建一个迭代器。这个迭代器会一直调用传入的可调用对象直到它返回标记值为止，这时候迭代终止。在下面的例子中，iter循环将不断返回 fp.read(block_size) 调用结果，直到其为 ‘’ 时终止，标记值b’’就是当到达文件结尾时的返回值。</li>
+<li>PS.如果总文件大小不是块大小的整数倍的话，最后一个返回元素的字节数会比期望值少。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生成器函数：分块读取文件内容，使用 iter+partial 函数</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">chunked_file_reader</span>(<span class="params">file, block_size=<span class="number">1024</span> * <span class="number">8</span></span>):</span><br><span class="line">    records = <span class="built_in">iter</span>(partial(file.read, block_size), <span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    <span class="keyword">for</span> chunk <span class="keyword">in</span> records:</span><br><span class="line">        <span class="keyword">yield</span> chunk</span><br><span class="line"></span><br><span class="line">        </span><br><span class="line"><span class="comment"># 分数据块读取文件</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;filename&#x27;</span>, <span class="string">&#x27;rb&#x27;</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="keyword">for</span> chunk <span class="keyword">in</span> chunked_file_reader(f):</span><br><span class="line">        do_something(chunk)</span><br></pre></td></tr></table></figure>
+
+<h3 id="知识补充："><a href="#知识补充：" class="headerlink" title="知识补充："></a>知识补充：</h3><h4 id="partial函数的解释"><a href="#partial函数的解释" class="headerlink" title="partial函数的解释"></a>partial函数的解释</h4><p>partial的内部机制和装饰器一样利用了函数式编程的闭包特性。简而言之，partial作为一个函数式编程中的高阶函数，其功能就是为某个已经存在的函数对象提供了一种简洁的绑定函数参数的方式。对于关键字参数，相当于提供默认值，对位置参数相当于冻结参数。</p>
+<p>重要的是，这种参数绑定，不是在函数定义阶段（比如默认值参数），而是借助外部工具partial来进行参数的绑定，返回一个参数缩减的特化版本，这个绑定过程可以发生在编写代码的阶段（简单的得到一个特化函数），甚至可以发生在运行时，通过配置文件或者交互输入解析待绑定的参数，来动态的生成特定功能的函数。</p>
+<p>原文链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/47124891">https://zhuanlan.zhihu.com/p/47124891</a></p>
+<h4 id="iter函数的解释"><a href="#iter函数的解释" class="headerlink" title="iter函数的解释"></a>iter函数的解释</h4><p>iter()函数有两种用法，一种是传一个参数，一种是传两个参数。结果都是返回一个iterator对象。</p>
+<p>所谓的iterator对象，就是有个next()方法的对象。next方法的惯例或约定（convention）是，每执行一次就返回下一个值（因此它要自己记录状态，通常是在iterator对象上记录），直到没有值的时候raiseStopIteration。</p>
+<p>传1个参数：参数collection应是一个可迭代的集合对象，支持迭代协议(即定义有__iter__()函数)，或者支持序列访问协议（即定义有getitem()函数），否则会返回TypeError异常。</p>
+<p>传2个参数：当第二个参数sentinel出现时，参数callable应是一个可调用对象(实例)，即定义了__call__()方法，当枚举到的值等于哨兵时，就会抛出StopIteration异常。</p>
+<p>原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/sxingming/article/details/51479039">https://blog.csdn.net/sxingming/article/details/51479039</a></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>在搜索资料的过程中，发现了读取大文件还有很多其他写法，但是归根到底的就这两类情况，其他的都是这两类的变种。</p>
+<p>如果有其他方法，还请大神在评论区指出，不胜感激涕零。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513103521.png" alt="Bain 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513103454.png" alt="Bain 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>Bain
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/" title="python如何读取大文件">http://example.com/2022/05/16/20220516_python如何读取大文件/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98/" rel="tag"># 面试问题</a>
+              <a href="/tags/%E5%A4%A7%E6%96%87%E4%BB%B6/" rel="tag"># 大文件</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/05/11/20220511_pandas%E5%A6%82%E4%BD%95%E5%AF%B9%E6%AF%8F%E8%A1%8C%E8%BF%9B%E8%A1%8C%E6%93%8D%E4%BD%9C%EF%BC%88apply%E5%87%BD%E6%95%B0%E7%94%A8%E6%B3%95%EF%BC%89/" rel="prev" title="pandas如何对每行进行操作（apply函数用法）">
+                  <i class="fa fa-chevron-left"></i> pandas如何对每行进行操作（apply函数用法）
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Bain</span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"waline-server-kohl.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":true,"pageview":false,"placeholder":"欢迎参与讨论呀","avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"visitor":true,"comment_count":true,"requiredFields":[],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>
