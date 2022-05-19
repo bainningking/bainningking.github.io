@@ -38,9 +38,10 @@
     <title>python如何读取大文件</title>
     <url>/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/</url>
     <content><![CDATA[<hr>
-<h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p>在一次面试过程中，主考官提出了问题：如何使用python读取大文件</p>
+<h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220517162535014.png" alt="image-20220517162535014"></p>
+<p>在一次面试过程中，主考官提出了问题：如何使用python读取大文件</p>
 <p>而我一般知道：</p>
-<p>1.一般读取、操作文件都是整体读取到内存中，所以在内存不够大的时候，读取大文件会造成非常耗费时间+“内存溢出”的问题</p>
+<p>1.一般读取、操作文件都是整体读取到内存中，所以在内存不够大的时候，读取大文件会造成非常耗时+内存溢出的问题</p>
 <p>2.我在工作场景中一般读取文件都是使用pd.read_csv()这个pandas的命令，因此只回答了这个方法内置了chunksize参数,可以用于按照指定行数读取文件（返回一个可迭代对象，每次迭代一个分块），每个分块都是dataframe，且每个dataframe的行数是chunksize。</p>
 <p>因此，今天专门去搜索了相关的资料，总结如下。</p>
 <h1 id="python读取大文件最常用的两种方法"><a href="#python读取大文件最常用的两种方法" class="headerlink" title="python读取大文件最常用的两种方法"></a>python读取大文件最常用的两种方法</h1><p>通常面对的大文件有两种形式：</p>
@@ -53,11 +54,13 @@
 <p>因此，在经过面向搜索引擎编程后，总结了最有针对性+最优+最简的两种方法分别针对两种情况：</p>
 <h2 id="针对多行大文件"><a href="#针对多行大文件" class="headerlink" title="针对多行大文件"></a>针对多行大文件</h2><span id="more"></span>
 
-<p>使用open的基础方法：open打开的是一个按行迭代的可迭代对象，通过对齐进行遍历，即可一行一行的读取文件，避免一次占用较大内存，底层内置了io缓存和内存的管理，无需使用者关心。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220517164754046.png" alt="image-20220517164754046"></p>
+<p>使用open的基础方法：open打开的是一个按行迭代的可迭代对象，通过对其进行遍历，即可一行一行的读取文件，避免一次占用较大内存，底层内置了io缓存和内存的管理，无需使用者关心。</p>
 <p>with句柄作为上下文管理器，负责打开和关闭文件（包括在内部块中引发异常时）</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># for line in f 会将文件对象 f 视为一个可迭代的数据类型,自动使用 IO 缓存和内存管理</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;filename&#x27;</span>, <span class="string">&#x27;rt&#x27;</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> f:</span><br><span class="line">        do_something(line)</span><br></pre></td></tr></table></figure>
 
-<h2 id="针对单行大文件"><a href="#针对单行大文件" class="headerlink" title="针对单行大文件"></a>针对单行大文件</h2><p>上面的open方法解决不了的一个问题是：当大文件只有一行时该怎么办</p>
+<h2 id="针对单行大文件"><a href="#针对单行大文件" class="headerlink" title="针对单行大文件"></a>针对单行大文件</h2><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220517164819877.png" alt="image-20220517164819877"></p>
+<p>上面的open方法解决不了的一个问题是：当大文件只有一行时该怎么办</p>
 <p>因此，此方法借助文件对象的read(size&#x3D;1024*8)方法，按数据的大小进行分块读取，size的单位是比特：bytes</p>
 <p>借助patial方法和iter方法更pythonic的实现这个功能：</p>
 <ul>
@@ -67,14 +70,18 @@
 </ul>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 生成器函数：分块读取文件内容，使用 iter+partial 函数</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">chunked_file_reader</span>(<span class="params">file, block_size=<span class="number">1024</span> * <span class="number">8</span></span>):</span><br><span class="line">    records = <span class="built_in">iter</span>(partial(file.read, block_size), <span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    <span class="keyword">for</span> chunk <span class="keyword">in</span> records:</span><br><span class="line">        <span class="keyword">yield</span> chunk</span><br><span class="line"></span><br><span class="line">        </span><br><span class="line"><span class="comment"># 分数据块读取文件</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;filename&#x27;</span>, <span class="string">&#x27;rb&#x27;</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="keyword">for</span> chunk <span class="keyword">in</span> chunked_file_reader(f):</span><br><span class="line">        do_something(chunk)</span><br></pre></td></tr></table></figure>
 
-<h3 id="知识补充："><a href="#知识补充：" class="headerlink" title="知识补充："></a>知识补充：</h3><h4 id="partial函数的解释"><a href="#partial函数的解释" class="headerlink" title="partial函数的解释"></a>partial函数的解释</h4><p>partial的内部机制和装饰器一样利用了函数式编程的闭包特性。简而言之，partial作为一个函数式编程中的高阶函数，其功能就是为某个已经存在的函数对象提供了一种简洁的绑定函数参数的方式。对于关键字参数，相当于提供默认值，对位置参数相当于冻结参数。</p>
+<h1 id="知识补充："><a href="#知识补充：" class="headerlink" title="知识补充："></a>知识补充：</h1><h2 id="partial函数"><a href="#partial函数" class="headerlink" title="partial函数"></a>partial函数</h2><p>如果需要减少某个函数的参数个数，你可以使用 <code>functools.partial()</code> 。 <code>partial()</code> 函数允许你给一个或多个参数设置固定的值，减少接下来被调用时的参数个数。 </p>
+<p><code>partial()</code>会固定某些参数并返回一个新的callable对象。这个新的callable接受未赋值的参数， 然后跟之前已经赋值过的参数合并起来，最后将所有参数传递给原始函数。</p>
+<p>partial的内部机制和装饰器一样利用了函数式编程的闭包特性。简而言之，partial作为一个函数式编程中的高阶函数，其功能就是为某个已经存在的函数对象提供了一种简洁的绑定函数参数的方式。对于关键字参数，相当于提供默认值，对位置参数相当于冻结参数。</p>
 <p>重要的是，这种参数绑定，不是在函数定义阶段（比如默认值参数），而是借助外部工具partial来进行参数的绑定，返回一个参数缩减的特化版本，这个绑定过程可以发生在编写代码的阶段（简单的得到一个特化函数），甚至可以发生在运行时，通过配置文件或者交互输入解析待绑定的参数，来动态的生成特定功能的函数。</p>
-<p>原文链接：<a href="https://zhuanlan.zhihu.com/p/47124891">https://zhuanlan.zhihu.com/p/47124891</a></p>
-<h4 id="iter函数的解释"><a href="#iter函数的解释" class="headerlink" title="iter函数的解释"></a>iter函数的解释</h4><p>iter()函数有两种用法，一种是传一个参数，一种是传两个参数。结果都是返回一个iterator对象。</p>
+<p>PS. <code>partial</code>做到了开放封闭原则：<strong>对外开放，对内（修改）封闭</strong></p>
+<p>参考：<a href="https://python3-cookbook.readthedocs.io/zh_CN/latest/c07/p08_make_callable_with_fewer_arguments.html">https://python3-cookbook.readthedocs.io/zh_CN/latest/c07/p08_make_callable_with_fewer_arguments.html</a></p>
+<p>参考：<a href="https://zhuanlan.zhihu.com/p/47124891">https://zhuanlan.zhihu.com/p/47124891</a></p>
+<h2 id="iter函数"><a href="#iter函数" class="headerlink" title="iter函数"></a>iter函数</h2><p>iter()函数有两种用法，一种是传一个参数，一种是传两个参数。结果都是返回一个iterator对象。</p>
 <p>所谓的iterator对象，就是有个next()方法的对象。next方法的惯例或约定（convention）是，每执行一次就返回下一个值（因此它要自己记录状态，通常是在iterator对象上记录），直到没有值的时候raiseStopIteration。</p>
 <p>传1个参数：参数collection应是一个可迭代的集合对象，支持迭代协议(即定义有__iter__()函数)，或者支持序列访问协议（即定义有getitem()函数），否则会返回TypeError异常。</p>
 <p>传2个参数：当第二个参数sentinel出现时，参数callable应是一个可调用对象(实例)，即定义了__call__()方法，当枚举到的值等于哨兵时，就会抛出StopIteration异常。</p>
-<p>原文链接：<a href="https://blog.csdn.net/sxingming/article/details/51479039">https://blog.csdn.net/sxingming/article/details/51479039</a></p>
+<p>参考：<a href="https://blog.csdn.net/sxingming/article/details/51479039">https://blog.csdn.net/sxingming/article/details/51479039</a></p>
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>在搜索资料的过程中，发现了读取大文件还有很多其他写法，但是归根到底的就这两类情况，其他的都是这两类的变种。</p>
 <p>如果有其他方法，还请大神在评论区指出，不胜感激涕零。</p>
 ]]></content>
@@ -84,6 +91,110 @@
       <tags>
         <tag>面试问题</tag>
         <tag>大文件</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>python中的GIL是什么</title>
+    <url>/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/</url>
+    <content><![CDATA[<hr>
+<h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145508151.png" alt="image-20220519145508151"></p>
+<p>一直听说GIL是python的弱点，工作过程中也只了解个皮毛，偶然看到一篇外文讲的很好，因此翻译搬运到这里，如有不足，欢迎提出。</p>
+<h1 id="什么是Python的全局解释锁（Global-Interpreter-Lock-GIL-）"><a href="#什么是Python的全局解释锁（Global-Interpreter-Lock-GIL-）" class="headerlink" title="什么是Python的全局解释锁（Global Interpreter Lock (GIL)）"></a>什么是Python的全局解释锁（Global Interpreter Lock (GIL)）</h1><p>通常面对的大文件有两种形式：</p>
+<p>Python全局解释锁，或者叫 <a href="https://wiki.python.org/moin/GlobalInterpreterLock">GIL</a>，简单来说，是一个互斥锁（或锁）——<strong>它只允许单个<a href="https://realpython.com/intro-to-python-threading/">线程</a>持有对 Python 解释器的控制权。</strong></p>
+<p>这意味着在任何时间点都只能有一个线程处于执行状态。执行单线程程序的开发人员看不到 GIL 的影响，但它可能成为 CPU 密集型和多线程代码的性能瓶颈。</p>
+<p>由于即使在具有多个 CPU 内核的多线程架构中，GIL在每个时间点也只允许一个线程执行任务，因此 GIL 已成为 Python 长期“受人诟病”的特性。</p>
+<p><strong>在本文中，您将了解 GIL 如何影响 Python 程序的性能，以及如何减轻它可能对代码产生的影响。</strong></p>
+<h1 id="GIL-为-Python-解决了什么问题？"><a href="#GIL-为-Python-解决了什么问题？" class="headerlink" title="GIL 为 Python 解决了什么问题？"></a>GIL 为 Python 解决了什么问题？</h1><span id="more"></span>
+
+<p>Python使用<strong>引用计数机制</strong>进行内存管理。这意味着所有在Python中创建的对象都具有一个引用计数变量，该变量用来表示该对象被引用的数量。当此计数达到零时，说明没有变量和参数引用此对象，则释放该对象占据的内存。</p>
+<p>让我们看一个简短的代码示例，以说明引用计数机制的工作方式：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> sys</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = []</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>b = a</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>sys.getrefcount(a)</span><br><span class="line"><span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<p>在上面的示例中，空列表对象[]的引用计数为3。列表对象被a，b和传递给sys.getrefcount()的参数引用。</p>
+<p>回到GIL上：</p>
+<p>python需要解决的问题是：在两个线程同时想要改变某对象的引用计数值的情况下，如何正确的进行处理以保证程序运行正常。假设没有正确的处理这种情况，它可能会导致内存泄漏问题（对象占用的内存永远不会释放），或者更糟糕的是，在对该对象的引用仍然存在时错误地释放内存。这可能会导致 Python 程序崩溃或其他莫名其妙的错误。</p>
+<p>这个引用计数变量可以通过向所有线程共享的数据结构（对象）添加<strong>锁</strong>来保持安全，这样它们就不会被不一致地修改。</p>
+<p>但是为每个对象或对象组添加一个锁意味着将存在多个锁，这可能会导致另一个问题——死锁（死锁只有在存在多个锁时才会发生）。另一个副作用是由于不同线程重复获取和释放锁会导致性能下降。（解决锁竞争需要通过机制协调，这个过程会增加性能开销）</p>
+<p>GIL 是Python解释器本身自带的锁机制，它添加了一条规则，即对任何 Python 字节码的执行都需要获取全局解释器锁（GIL）。好处是这可以防止死锁（因为只有一个锁）并且不会引入太多的性能开销。坏处是它有效地使任何受 CPU 限制的 Python 程序成为单线程的（多线程无法利用多核CPU并行计算的优势，仍只能每个时间点只利用一个CPU）。</p>
+<p>虽然 Ruby 等其他语言的解释器也使用了GIL，但并不是说线程安全的问题只能用GIL解决。某些语言通过使用引用计数以外的方法（例如垃圾收集）来避免 GIL 对线程内存安全管理的要求。</p>
+<p>换句话说，这通常意味着不使用GIL的语言必须通过添加其他性能提升功能（如 JIT 编译器）来弥补 GIL 单线程性能优势的损失。</p>
+<p>（译者：也就是说GIL是把双刃剑：对于单线程程序会很快，但是损失了多线程并行计算的能力；不使用GIL虽然解决了多线程并行计算的问题，但是会增加单线程运行时的性能开销。）</p>
+<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145105949.png" alt="image-20220519145105949"></p>
+<h1 id="为什么Python仍然选择-GIL-作为解决方案呢？"><a href="#为什么Python仍然选择-GIL-作为解决方案呢？" class="headerlink" title="为什么Python仍然选择 GIL 作为解决方案呢？"></a>为什么Python仍然选择 GIL 作为解决方案呢？</h1><p>那么，为什么 Python 选择了一种看似如此不便利的方法呢？这对开发 Python 语言的人员来说算是做出了一个错误的决定吗？</p>
+<p>嗯，用<a href="https://youtu.be/KVKufdTphKs?t=12m11s">Larry Hastings 的话来说，</a> 设计使用 GIL 正是是让 Python 像今天这样流行的原因之一。</p>
+<p>Python 在操作系统还没有线程这个概念的时候就存在了。 语言被发明的初衷就是要易于使用，以便可以更快的进行开发工作，这一点也让越来越多的开发人员开始使用它。</p>
+<!--译者注：这个描述是有问题的，第一个线程描述在1967年的MVT中就被提到了，而Python是在1990年被荷兰数学与计算机科学家 吉多·范罗苏姆 设计发明的-->
+
+<p>在用C语言开发Python的过程中，开发人员为现有的 C 语言库编写了许多扩展，因为这些扩展库的特性在 Python 中是必需的。为了防止不一致的更改，这些 C 扩展需要使用 GIL 提供的线程安全的内存管理机制来保证。</p>
+<p>GIL 易于实现，并且很容易添加到 Python 中。它提升了单线程程序的运行性能——因为只需要管理一个锁。</p>
+<p>GIL使得非线程安全的 C 库变得更容易集成。而正是这些对 C 库的扩展（使用了GIL）成为 Python 被不同社区欣然采用的原因之一。</p>
+<p>因此可以看出，GIL 是CPython开发人员针对在 Python 早期面临的难题的实用解决方案。</p>
+<h1 id="对-Python-多线程程序的影响"><a href="#对-Python-多线程程序的影响" class="headerlink" title="对 Python 多线程程序的影响"></a>对 Python 多线程程序的影响</h1><p>在你查看一个典型的 Python 程序或任何计算机程序时，一般情况下，性能瓶颈主要体现在两个方面：</p>
+<ul>
+<li>CPU密集型程序——受 CPU 能力限制</li>
+<li>IO密集型程序——受 I&#x2F;O 能力限制</li>
+</ul>
+<p>CPU 密集型程序是那些将 CPU 推到使用极限的程序（即频繁使用CPU的程序）。包括进行数学计算的程序，如矩阵乘法、搜索、图像处理等。</p>
+<p>I&#x2F;O 密集型程序是那些需要花费时间来等待用户、文件、数据库、网络等输入输出（Input&#x2F;Output）的程序。I&#x2F;O 密集型程序有时必须等待大量时间，直到它们从数据来源获得他们需要的东西，因为数据来源可能需要在输入&#x2F;输出准备好之前进行自己的处理，例如，用户正在考虑输入什么内容到命令提示符，或数据库正在查询数据的过程。</p>
+<p>让我们来看一个简单的 CPU 密集型程序——执行倒计时任务：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># single_threaded.py</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</span><br><span class="line"></span><br><span class="line">COUNT = <span class="number">50000000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">countdown</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">while</span> n&gt;<span class="number">0</span>:</span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line">start = time.time()</span><br><span class="line">countdown(COUNT)</span><br><span class="line">end = time.time()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Time taken in seconds -&#x27;</span>, end - start)</span><br></pre></td></tr></table></figure>
+
+<p>在我的 4 核CPU系统上运行此代码会得到以下输出：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">python single_threaded.py</span></span><br><span class="line">Time taken in seconds - 6.20024037361145</span><br></pre></td></tr></table></figure>
+
+<p>现在我稍微修改下代码，这次使用两个并行线程来执行相同的倒计时任务：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># multi_threaded.py</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</span><br><span class="line"></span><br><span class="line">COUNT = <span class="number">50000000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">countdown</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">while</span> n&gt;<span class="number">0</span>:</span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line">t1 = Thread(target=countdown, args=(COUNT//<span class="number">2</span>,))</span><br><span class="line">t2 = Thread(target=countdown, args=(COUNT//<span class="number">2</span>,))</span><br><span class="line"></span><br><span class="line">start = time.time()</span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br><span class="line">t1.join()</span><br><span class="line">t2.join()</span><br><span class="line">end = time.time()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Time taken in seconds -&#x27;</span>, end - start)</span><br></pre></td></tr></table></figure>
+
+<p>当我再次运行它时：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">python multi_threaded.py</span></span><br><span class="line">Time taken in seconds - 6.924342632293701</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145410239.png" alt="image-20220519145410239"></p>
+<p>如您所见，两个版本的完成时间几乎相同。在多线程版本中，GIL 阻止了CPU密集型程序的线程并行执行。</p>
+<p>GIL 对 I&#x2F;O 密集型的多线程程序性能没有太大影响，因为在线程等待 I&#x2F;O 时，锁是在线程之间共享的。</p>
+<p>当程序是完全的 CPU 密集型程序时，比如处理图像的程序，假如使用Python的多线程去做，不仅程序会因为GIL而变成单线程，而且还会看到执行时间增加了，如上面的示例所示。</p>
+<p>这是因为与完全单线程的情况相比，多线程增加了锁的获取和释放的步骤，造成了更多的性能开销的结果。</p>
+<h1 id="为什么-GIL-还没有被移除？"><a href="#为什么-GIL-还没有被移除？" class="headerlink" title="为什么 GIL 还没有被移除？"></a>为什么 GIL 还没有被移除？</h1><p>Python 的开发人员收到了很多关于GIL的抱怨，但是像 Python 这样流行的语言如果删除了 GIL机制 ，这么大的变更如果向后兼容出现了问题，这是不能接受的。</p>
+<p>GIL 当然是可以被删除的，过去开发人员和研究人员已经多次这样尝试，但所有这些尝试都破坏了现有的 C 扩展，因为这些扩展严重依赖于 GIL 提供的解决方案。</p>
+<p>当然，还有其他解决方案可以替代GIL解决C扩展面临的问题，但其中一些会降低单线程和多线程 I&#x2F;O 密集型程序的性能，另外一些则太难了。毕竟，您不希望现有的 Python 程序更新新版本python后运行速度变慢，对吧？</p>
+<p>Python 的创始人和 BDFL（Benevolent Dictator For Life，<strong>终身仁慈独裁者</strong>），Guido van Rossum，于 2007 年 9 月在他的文章<a href="https://www.artima.com/weblogs/viewpost.jsp?thread=214235">“移除 GIL 并不容易”</a>中对社区做出了回答：</p>
+<blockquote>
+<p>“只有在单线程程序（以及多线程 I&#x2F;O 密集型的程序）的性能不降低的情况下，我才会同意在 Python3 中打补丁（解决GIL造成的问题）”</p>
+</blockquote>
+<p>从那以后所做的任何试图解决GIL的尝试都没有满足这一条件。</p>
+<h1 id="为什么GIL没有在-Python-3-中被移除？"><a href="#为什么GIL没有在-Python-3-中被移除？" class="headerlink" title="为什么GIL没有在 Python 3 中被移除？"></a>为什么GIL没有在 Python 3 中被移除？</h1><p>Python 3 （相较Python 2）确实从头开始增加了很多特性，并且在这个过程中，也确实破坏了一些现有的 C 扩展——这些扩展需要更新和移植才能与 Python 3 一起使用。这就是为什么Python 3 的早期版本被社区采用速度较慢的原因。</p>
+<p>但是为什么 GIL 没有在这个过程中被移除呢？</p>
+<p>与 Python 2 相比，删除 GIL 后在单线程性能方面会使 Python 3 变慢，您可以想象这会导致什么结果。目前还没有解决方案能替代 GIL 在单线程性能上的优势。所以结果 Python 3 仍然保有 GIL。</p>
+<p>但 Python 3 确实为现有的 GIL 带来了重大改进——</p>
+<p>我们上面讨论的 GIL 对多线程的影响，仅仅是对“纯粹的CPU密集型”和“纯粹的I&#x2F;O 密集型”的多线程程序的影响，但是实际的程序往往没那么“纯粹”，那么GIL 对于某些线程是CPU密集而某些线程是IO密集的多线程程序的影响又是怎么样的呢？</p>
+<p>在这样的程序中，可以想象，Python 的 GIL 会饿死 I&#x2F;O 密集型线程，因为它们得不到从 CPU 密集型线程获取 GIL 的机会。</p>
+<p>这是因为 Python 内置的一种机制，它会强制线程在连续使用<strong>固定间隔后</strong>释放 GIL ，如果没有其他线程获得 GIL，同一个线程可以继续使用它。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> sys</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="comment"># The interval is set to 100 instructions:(这个间隔被设置为100个指令执行时间)</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>sys.getcheckinterval()</span><br><span class="line"><span class="number">100</span></span><br></pre></td></tr></table></figure>
+
+<p>这种机制的问题在于，大多数情况下， CPU 密集型的线程会在其他线程获取 GIL 之前重新获取 GIL。这种机制 David Beazley 做了相关研究，可以在<a href="http://www.dabeaz.com/blog/2010/01/python-gil-visualized.html">此处</a>找到可视化的内容。</p>
+<p>这个问题在 2009 年的 Python 3.2 中由 Antoine Pitrou 修复，他<a href="https://mail.python.org/pipermail/python-dev/2009-October/093321.html">添加了一种机制</a>，可以查看其他线程被丢弃的 GIL 获取请求的数量，并且不允许当前线程在其他线程有机会运行之前重新获取 GIL。</p>
+<h1 id="如何处理-Python-的-GIL"><a href="#如何处理-Python-的-GIL" class="headerlink" title="如何处理 Python 的 GIL"></a>如何处理 Python 的 GIL</h1><p>如果 GIL 给您带来问题，您可以尝试以下几种方法：</p>
+<p><strong>多进程与多线程：</strong>最流行的方法是使用多进程方法，在这种方法中使用多个进程而不是线程。每个 Python 进程都有自己的 Python 解释器和内存空间，因此 GIL 不会成为问题。Python 有一个<code>multiprocessing</code>模块可以让我们像这样轻松地创建进程：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Pool</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">COUNT = <span class="number">50000000</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">countdown</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">while</span> n&gt;<span class="number">0</span>:</span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    pool = Pool(processes=<span class="number">2</span>)</span><br><span class="line">    start = time.time()</span><br><span class="line">    r1 = pool.apply_async(countdown, [COUNT//<span class="number">2</span>])</span><br><span class="line">    r2 = pool.apply_async(countdown, [COUNT//<span class="number">2</span>])</span><br><span class="line">    pool.close()</span><br><span class="line">    pool.join()</span><br><span class="line">    end = time.time()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Time taken in seconds -&#x27;</span>, end - start)</span><br></pre></td></tr></table></figure>
+
+<p>在我的系统上运行它会给出以下输出：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">python multiprocess.py</span></span><br><span class="line">Time taken in seconds - 4.060242414474487</span><br></pre></td></tr></table></figure>
+
+<p>与多线程版本相比，性能得到了不错的提升，对吧？</p>
+<p>时间并没有减少到我们上面看到的一半，因为进程管理有它自己的开销。多进程的管理比多线程要重，因此请记住，这可能会成为性能扩展的瓶颈。</p>
+<p><strong>选择另外的 Python 解释器：</strong> Python 有多个解释器实现。<a href="https://realpython.com/c-for-python-programmers/">分别用C</a>、<a href="https://realpython.com/oop-in-python-vs-java/">Java</a> 、C# 和 Python编写的CPython、Jython、IronPython 和<a href="https://realpython.com/pypy-faster-python/">PyPy</a>是最受欢迎的。GIL 仅存在于 CPython 的原始 Python 实现中。如果您的程序及其依赖库可用其他解释器实现，那么您也可以尝试它们。</p>
+<p><strong>做等等党：</strong>虽然许多 Python 用户享受了 GIL 带来的单线程性能优势。但是多线程程序员也不必担心，因为 Python 社区中有一些最聪明的人正在努力从 CPython 中删除 GIL。其中一个比较出名尝试叫<a href="https://github.com/larryhastings/gilectomy">Gilectomy</a>。</p>
+<p>Python 的GIL 通常被认为是Python 的一个疑难杂症。但请记住，作为 Pythonista，您通常只有在编写 C 扩展或在程序中使用CPU密集型的多线程时才会受到它的影响。</p>
+<p>到此为止，本文应该向您提供了 GIL 是什么以及如何在您自己的项目中处理它所需的一切。如果您想了解 GIL 的低级内部工作原理，我建议您观看 David Beazley 的“<a href="https://youtu.be/Obt-vMVdM8s">了解 Python GIL”</a>演讲。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文在2018年前就写出来了，阅读时应考虑到Python在这个时间下的飞速发展~</p>
+<p>原文翻译自   <a href="https://realpython.com/python-gil/%EF%BC%8C%E7%9B%AE%E7%9A%84%E6%98%AF%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB%EF%BC%8C%E5%A6%82%E6%9C%89%E4%BE%B5%E6%9D%83%EF%BC%8C%E8%AF%B7%E8%81%94%E7%B3%BB%E6%88%91%E5%88%A0%E9%99%A4%E3%80%82">https://realpython.com/python-gil/，目的是技术分享，如有侵权，请联系我删除。</a></p>
+<p>希望大家能有所收获~</p>
+]]></content>
+      <categories>
+        <category>python</category>
+      </categories>
+      <tags>
+        <tag>面试问题</tag>
+        <tag>GIL</tag>
       </tags>
   </entry>
 </search>

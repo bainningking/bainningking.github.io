@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.1.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="楔子 一直听说GIL是python的弱点，工作过程中也只了解个皮毛，偶然看到一篇外文讲的很好，因此翻译搬运到这里，如有不足，欢迎提出。 什么是Python的全局解释锁（Global Interpreter Lock (GIL)）通常面对的大文件有两种形式： Python全局解释锁，或者叫 GIL，简单来说，是一个互斥锁（或锁）——它只允许单个线程持有对 Python 解释器的控制权。 这意味着在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="python中的GIL是什么">
+<meta property="og:url" content="http://example.com/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/index.html">
+<meta property="og:site_name" content="Bain的博客">
+<meta property="og:description" content="楔子 一直听说GIL是python的弱点，工作过程中也只了解个皮毛，偶然看到一篇外文讲的很好，因此翻译搬运到这里，如有不足，欢迎提出。 什么是Python的全局解释锁（Global Interpreter Lock (GIL)）通常面对的大文件有两种形式： Python全局解释锁，或者叫 GIL，简单来说，是一个互斥锁（或锁）——它只允许单个线程持有对 Python 解释器的控制权。 这意味着在">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145508151.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145105949.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145410239.png">
+<meta property="article:published_time" content="2022-05-18T11:30:00.000Z">
+<meta property="article:modified_time" content="2022-05-19T06:55:52.351Z">
+<meta property="article:author" content="Bain">
+<meta property="article:tag" content="面试问题">
+<meta property="article:tag" content="GIL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145508151.png">
+
+
+<link rel="canonical" href="http://example.com/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/","path":"2022/05/18/20220518_GIL是什么/","title":"python中的GIL是什么"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>python中的GIL是什么 | Bain的博客</title>
+  
+
+
+
+
+<link rel="dns-prefetch" href="waline-server-kohl.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Bain的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">种一棵树最好的时间是十年前，其次是现在。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A5%94%E5%AD%90"><span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFPython%E7%9A%84%E5%85%A8%E5%B1%80%E8%A7%A3%E9%87%8A%E9%94%81%EF%BC%88Global-Interpreter-Lock-GIL-%EF%BC%89"><span class="nav-text">什么是Python的全局解释锁（Global Interpreter Lock (GIL)）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GIL-%E4%B8%BA-Python-%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-text">GIL 为 Python 解决了什么问题？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88Python%E4%BB%8D%E7%84%B6%E9%80%89%E6%8B%A9-GIL-%E4%BD%9C%E4%B8%BA%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E5%91%A2%EF%BC%9F"><span class="nav-text">为什么Python仍然选择 GIL 作为解决方案呢？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%B9-Python-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%A8%8B%E5%BA%8F%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-text">对 Python 多线程程序的影响</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-GIL-%E8%BF%98%E6%B2%A1%E6%9C%89%E8%A2%AB%E7%A7%BB%E9%99%A4%EF%BC%9F"><span class="nav-text">为什么 GIL 还没有被移除？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88GIL%E6%B2%A1%E6%9C%89%E5%9C%A8-Python-3-%E4%B8%AD%E8%A2%AB%E7%A7%BB%E9%99%A4%EF%BC%9F"><span class="nav-text">为什么GIL没有在 Python 3 中被移除？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86-Python-%E7%9A%84-GIL"><span class="nav-text">如何处理 Python 的 GIL</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Bain"
+      src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513105042.png">
+  <p class="site-author-name" itemprop="name">Bain</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/bainningking" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;bainningking" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:bainningking@gmail.com" title="E-Mail → mailto:bainningking@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513105042.png">
+      <meta itemprop="name" content="Bain">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bain的博客">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="python中的GIL是什么 | Bain的博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          python中的GIL是什么
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-05-18 19:30:00" itemprop="dateCreated datePublished" datetime="2022-05-18T19:30:00+08:00">2022-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-05-19 14:55:52" itemprop="dateModified" datetime="2022-05-19T14:55:52+08:00">2022-05-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <hr>
+<h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145508151.png" alt="image-20220519145508151"></p>
+<p>一直听说GIL是python的弱点，工作过程中也只了解个皮毛，偶然看到一篇外文讲的很好，因此翻译搬运到这里，如有不足，欢迎提出。</p>
+<h1 id="什么是Python的全局解释锁（Global-Interpreter-Lock-GIL-）"><a href="#什么是Python的全局解释锁（Global-Interpreter-Lock-GIL-）" class="headerlink" title="什么是Python的全局解释锁（Global Interpreter Lock (GIL)）"></a>什么是Python的全局解释锁（Global Interpreter Lock (GIL)）</h1><p>通常面对的大文件有两种形式：</p>
+<p>Python全局解释锁，或者叫 <a target="_blank" rel="noopener" href="https://wiki.python.org/moin/GlobalInterpreterLock">GIL</a>，简单来说，是一个互斥锁（或锁）——<strong>它只允许单个<a target="_blank" rel="noopener" href="https://realpython.com/intro-to-python-threading/">线程</a>持有对 Python 解释器的控制权。</strong></p>
+<p>这意味着在任何时间点都只能有一个线程处于执行状态。执行单线程程序的开发人员看不到 GIL 的影响，但它可能成为 CPU 密集型和多线程代码的性能瓶颈。</p>
+<p>由于即使在具有多个 CPU 内核的多线程架构中，GIL在每个时间点也只允许一个线程执行任务，因此 GIL 已成为 Python 长期“受人诟病”的特性。</p>
+<p><strong>在本文中，您将了解 GIL 如何影响 Python 程序的性能，以及如何减轻它可能对代码产生的影响。</strong></p>
+<h1 id="GIL-为-Python-解决了什么问题？"><a href="#GIL-为-Python-解决了什么问题？" class="headerlink" title="GIL 为 Python 解决了什么问题？"></a>GIL 为 Python 解决了什么问题？</h1><span id="more"></span>
+
+<p>Python使用<strong>引用计数机制</strong>进行内存管理。这意味着所有在Python中创建的对象都具有一个引用计数变量，该变量用来表示该对象被引用的数量。当此计数达到零时，说明没有变量和参数引用此对象，则释放该对象占据的内存。</p>
+<p>让我们看一个简短的代码示例，以说明引用计数机制的工作方式：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> sys</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = []</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>b = a</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>sys.getrefcount(a)</span><br><span class="line"><span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<p>在上面的示例中，空列表对象[]的引用计数为3。列表对象被a，b和传递给sys.getrefcount()的参数引用。</p>
+<p>回到GIL上：</p>
+<p>python需要解决的问题是：在两个线程同时想要改变某对象的引用计数值的情况下，如何正确的进行处理以保证程序运行正常。假设没有正确的处理这种情况，它可能会导致内存泄漏问题（对象占用的内存永远不会释放），或者更糟糕的是，在对该对象的引用仍然存在时错误地释放内存。这可能会导致 Python 程序崩溃或其他莫名其妙的错误。</p>
+<p>这个引用计数变量可以通过向所有线程共享的数据结构（对象）添加<strong>锁</strong>来保持安全，这样它们就不会被不一致地修改。</p>
+<p>但是为每个对象或对象组添加一个锁意味着将存在多个锁，这可能会导致另一个问题——死锁（死锁只有在存在多个锁时才会发生）。另一个副作用是由于不同线程重复获取和释放锁会导致性能下降。（解决锁竞争需要通过机制协调，这个过程会增加性能开销）</p>
+<p>GIL 是Python解释器本身自带的锁机制，它添加了一条规则，即对任何 Python 字节码的执行都需要获取全局解释器锁（GIL）。好处是这可以防止死锁（因为只有一个锁）并且不会引入太多的性能开销。坏处是它有效地使任何受 CPU 限制的 Python 程序成为单线程的（多线程无法利用多核CPU并行计算的优势，仍只能每个时间点只利用一个CPU）。</p>
+<p>虽然 Ruby 等其他语言的解释器也使用了GIL，但并不是说线程安全的问题只能用GIL解决。某些语言通过使用引用计数以外的方法（例如垃圾收集）来避免 GIL 对线程内存安全管理的要求。</p>
+<p>换句话说，这通常意味着不使用GIL的语言必须通过添加其他性能提升功能（如 JIT 编译器）来弥补 GIL 单线程性能优势的损失。</p>
+<p>（译者：也就是说GIL是把双刃剑：对于单线程程序会很快，但是损失了多线程并行计算的能力；不使用GIL虽然解决了多线程并行计算的问题，但是会增加单线程运行时的性能开销。）</p>
+<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145105949.png" alt="image-20220519145105949"></p>
+<h1 id="为什么Python仍然选择-GIL-作为解决方案呢？"><a href="#为什么Python仍然选择-GIL-作为解决方案呢？" class="headerlink" title="为什么Python仍然选择 GIL 作为解决方案呢？"></a>为什么Python仍然选择 GIL 作为解决方案呢？</h1><p>那么，为什么 Python 选择了一种看似如此不便利的方法呢？这对开发 Python 语言的人员来说算是做出了一个错误的决定吗？</p>
+<p>嗯，用<a target="_blank" rel="noopener" href="https://youtu.be/KVKufdTphKs?t=12m11s">Larry Hastings 的话来说，</a> 设计使用 GIL 正是是让 Python 像今天这样流行的原因之一。</p>
+<p>Python 在操作系统还没有线程这个概念的时候就存在了。 语言被发明的初衷就是要易于使用，以便可以更快的进行开发工作，这一点也让越来越多的开发人员开始使用它。</p>
+<!--译者注：这个描述是有问题的，第一个线程描述在1967年的MVT中就被提到了，而Python是在1990年被荷兰数学与计算机科学家 吉多·范罗苏姆 设计发明的-->
+
+<p>在用C语言开发Python的过程中，开发人员为现有的 C 语言库编写了许多扩展，因为这些扩展库的特性在 Python 中是必需的。为了防止不一致的更改，这些 C 扩展需要使用 GIL 提供的线程安全的内存管理机制来保证。</p>
+<p>GIL 易于实现，并且很容易添加到 Python 中。它提升了单线程程序的运行性能——因为只需要管理一个锁。</p>
+<p>GIL使得非线程安全的 C 库变得更容易集成。而正是这些对 C 库的扩展（使用了GIL）成为 Python 被不同社区欣然采用的原因之一。</p>
+<p>因此可以看出，GIL 是CPython开发人员针对在 Python 早期面临的难题的实用解决方案。</p>
+<h1 id="对-Python-多线程程序的影响"><a href="#对-Python-多线程程序的影响" class="headerlink" title="对 Python 多线程程序的影响"></a>对 Python 多线程程序的影响</h1><p>在你查看一个典型的 Python 程序或任何计算机程序时，一般情况下，性能瓶颈主要体现在两个方面：</p>
+<ul>
+<li>CPU密集型程序——受 CPU 能力限制</li>
+<li>IO密集型程序——受 I&#x2F;O 能力限制</li>
+</ul>
+<p>CPU 密集型程序是那些将 CPU 推到使用极限的程序（即频繁使用CPU的程序）。包括进行数学计算的程序，如矩阵乘法、搜索、图像处理等。</p>
+<p>I&#x2F;O 密集型程序是那些需要花费时间来等待用户、文件、数据库、网络等输入输出（Input&#x2F;Output）的程序。I&#x2F;O 密集型程序有时必须等待大量时间，直到它们从数据来源获得他们需要的东西，因为数据来源可能需要在输入&#x2F;输出准备好之前进行自己的处理，例如，用户正在考虑输入什么内容到命令提示符，或数据库正在查询数据的过程。</p>
+<p>让我们来看一个简单的 CPU 密集型程序——执行倒计时任务：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># single_threaded.py</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</span><br><span class="line"></span><br><span class="line">COUNT = <span class="number">50000000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">countdown</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">while</span> n&gt;<span class="number">0</span>:</span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line">start = time.time()</span><br><span class="line">countdown(COUNT)</span><br><span class="line">end = time.time()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Time taken in seconds -&#x27;</span>, end - start)</span><br></pre></td></tr></table></figure>
+
+<p>在我的 4 核CPU系统上运行此代码会得到以下输出：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">python single_threaded.py</span></span><br><span class="line">Time taken in seconds - 6.20024037361145</span><br></pre></td></tr></table></figure>
+
+<p>现在我稍微修改下代码，这次使用两个并行线程来执行相同的倒计时任务：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># multi_threaded.py</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</span><br><span class="line"></span><br><span class="line">COUNT = <span class="number">50000000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">countdown</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">while</span> n&gt;<span class="number">0</span>:</span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line">t1 = Thread(target=countdown, args=(COUNT//<span class="number">2</span>,))</span><br><span class="line">t2 = Thread(target=countdown, args=(COUNT//<span class="number">2</span>,))</span><br><span class="line"></span><br><span class="line">start = time.time()</span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br><span class="line">t1.join()</span><br><span class="line">t2.join()</span><br><span class="line">end = time.time()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Time taken in seconds -&#x27;</span>, end - start)</span><br></pre></td></tr></table></figure>
+
+<p>当我再次运行它时：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">python multi_threaded.py</span></span><br><span class="line">Time taken in seconds - 6.924342632293701</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145410239.png" alt="image-20220519145410239"></p>
+<p>如您所见，两个版本的完成时间几乎相同。在多线程版本中，GIL 阻止了CPU密集型程序的线程并行执行。</p>
+<p>GIL 对 I&#x2F;O 密集型的多线程程序性能没有太大影响，因为在线程等待 I&#x2F;O 时，锁是在线程之间共享的。</p>
+<p>当程序是完全的 CPU 密集型程序时，比如处理图像的程序，假如使用Python的多线程去做，不仅程序会因为GIL而变成单线程，而且还会看到执行时间增加了，如上面的示例所示。</p>
+<p>这是因为与完全单线程的情况相比，多线程增加了锁的获取和释放的步骤，造成了更多的性能开销的结果。</p>
+<h1 id="为什么-GIL-还没有被移除？"><a href="#为什么-GIL-还没有被移除？" class="headerlink" title="为什么 GIL 还没有被移除？"></a>为什么 GIL 还没有被移除？</h1><p>Python 的开发人员收到了很多关于GIL的抱怨，但是像 Python 这样流行的语言如果删除了 GIL机制 ，这么大的变更如果向后兼容出现了问题，这是不能接受的。</p>
+<p>GIL 当然是可以被删除的，过去开发人员和研究人员已经多次这样尝试，但所有这些尝试都破坏了现有的 C 扩展，因为这些扩展严重依赖于 GIL 提供的解决方案。</p>
+<p>当然，还有其他解决方案可以替代GIL解决C扩展面临的问题，但其中一些会降低单线程和多线程 I&#x2F;O 密集型程序的性能，另外一些则太难了。毕竟，您不希望现有的 Python 程序更新新版本python后运行速度变慢，对吧？</p>
+<p>Python 的创始人和 BDFL（Benevolent Dictator For Life，<strong>终身仁慈独裁者</strong>），Guido van Rossum，于 2007 年 9 月在他的文章<a target="_blank" rel="noopener" href="https://www.artima.com/weblogs/viewpost.jsp?thread=214235">“移除 GIL 并不容易”</a>中对社区做出了回答：</p>
+<blockquote>
+<p>“只有在单线程程序（以及多线程 I&#x2F;O 密集型的程序）的性能不降低的情况下，我才会同意在 Python3 中打补丁（解决GIL造成的问题）”</p>
+</blockquote>
+<p>从那以后所做的任何试图解决GIL的尝试都没有满足这一条件。</p>
+<h1 id="为什么GIL没有在-Python-3-中被移除？"><a href="#为什么GIL没有在-Python-3-中被移除？" class="headerlink" title="为什么GIL没有在 Python 3 中被移除？"></a>为什么GIL没有在 Python 3 中被移除？</h1><p>Python 3 （相较Python 2）确实从头开始增加了很多特性，并且在这个过程中，也确实破坏了一些现有的 C 扩展——这些扩展需要更新和移植才能与 Python 3 一起使用。这就是为什么Python 3 的早期版本被社区采用速度较慢的原因。</p>
+<p>但是为什么 GIL 没有在这个过程中被移除呢？</p>
+<p>与 Python 2 相比，删除 GIL 后在单线程性能方面会使 Python 3 变慢，您可以想象这会导致什么结果。目前还没有解决方案能替代 GIL 在单线程性能上的优势。所以结果 Python 3 仍然保有 GIL。</p>
+<p>但 Python 3 确实为现有的 GIL 带来了重大改进——</p>
+<p>我们上面讨论的 GIL 对多线程的影响，仅仅是对“纯粹的CPU密集型”和“纯粹的I&#x2F;O 密集型”的多线程程序的影响，但是实际的程序往往没那么“纯粹”，那么GIL 对于某些线程是CPU密集而某些线程是IO密集的多线程程序的影响又是怎么样的呢？</p>
+<p>在这样的程序中，可以想象，Python 的 GIL 会饿死 I&#x2F;O 密集型线程，因为它们得不到从 CPU 密集型线程获取 GIL 的机会。</p>
+<p>这是因为 Python 内置的一种机制，它会强制线程在连续使用<strong>固定间隔后</strong>释放 GIL ，如果没有其他线程获得 GIL，同一个线程可以继续使用它。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> sys</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="comment"># The interval is set to 100 instructions:(这个间隔被设置为100个指令执行时间)</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>sys.getcheckinterval()</span><br><span class="line"><span class="number">100</span></span><br></pre></td></tr></table></figure>
+
+<p>这种机制的问题在于，大多数情况下， CPU 密集型的线程会在其他线程获取 GIL 之前重新获取 GIL。这种机制 David Beazley 做了相关研究，可以在<a target="_blank" rel="noopener" href="http://www.dabeaz.com/blog/2010/01/python-gil-visualized.html">此处</a>找到可视化的内容。</p>
+<p>这个问题在 2009 年的 Python 3.2 中由 Antoine Pitrou 修复，他<a target="_blank" rel="noopener" href="https://mail.python.org/pipermail/python-dev/2009-October/093321.html">添加了一种机制</a>，可以查看其他线程被丢弃的 GIL 获取请求的数量，并且不允许当前线程在其他线程有机会运行之前重新获取 GIL。</p>
+<h1 id="如何处理-Python-的-GIL"><a href="#如何处理-Python-的-GIL" class="headerlink" title="如何处理 Python 的 GIL"></a>如何处理 Python 的 GIL</h1><p>如果 GIL 给您带来问题，您可以尝试以下几种方法：</p>
+<p><strong>多进程与多线程：</strong>最流行的方法是使用多进程方法，在这种方法中使用多个进程而不是线程。每个 Python 进程都有自己的 Python 解释器和内存空间，因此 GIL 不会成为问题。Python 有一个<code>multiprocessing</code>模块可以让我们像这样轻松地创建进程：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Pool</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">COUNT = <span class="number">50000000</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">countdown</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">while</span> n&gt;<span class="number">0</span>:</span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    pool = Pool(processes=<span class="number">2</span>)</span><br><span class="line">    start = time.time()</span><br><span class="line">    r1 = pool.apply_async(countdown, [COUNT//<span class="number">2</span>])</span><br><span class="line">    r2 = pool.apply_async(countdown, [COUNT//<span class="number">2</span>])</span><br><span class="line">    pool.close()</span><br><span class="line">    pool.join()</span><br><span class="line">    end = time.time()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Time taken in seconds -&#x27;</span>, end - start)</span><br></pre></td></tr></table></figure>
+
+<p>在我的系统上运行它会给出以下输出：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">python multiprocess.py</span></span><br><span class="line">Time taken in seconds - 4.060242414474487</span><br></pre></td></tr></table></figure>
+
+<p>与多线程版本相比，性能得到了不错的提升，对吧？</p>
+<p>时间并没有减少到我们上面看到的一半，因为进程管理有它自己的开销。多进程的管理比多线程要重，因此请记住，这可能会成为性能扩展的瓶颈。</p>
+<p><strong>选择另外的 Python 解释器：</strong> Python 有多个解释器实现。<a target="_blank" rel="noopener" href="https://realpython.com/c-for-python-programmers/">分别用C</a>、<a target="_blank" rel="noopener" href="https://realpython.com/oop-in-python-vs-java/">Java</a> 、C# 和 Python编写的CPython、Jython、IronPython 和<a target="_blank" rel="noopener" href="https://realpython.com/pypy-faster-python/">PyPy</a>是最受欢迎的。GIL 仅存在于 CPython 的原始 Python 实现中。如果您的程序及其依赖库可用其他解释器实现，那么您也可以尝试它们。</p>
+<p><strong>做等等党：</strong>虽然许多 Python 用户享受了 GIL 带来的单线程性能优势。但是多线程程序员也不必担心，因为 Python 社区中有一些最聪明的人正在努力从 CPython 中删除 GIL。其中一个比较出名尝试叫<a target="_blank" rel="noopener" href="https://github.com/larryhastings/gilectomy">Gilectomy</a>。</p>
+<p>Python 的GIL 通常被认为是Python 的一个疑难杂症。但请记住，作为 Pythonista，您通常只有在编写 C 扩展或在程序中使用CPU密集型的多线程时才会受到它的影响。</p>
+<p>到此为止，本文应该向您提供了 GIL 是什么以及如何在您自己的项目中处理它所需的一切。如果您想了解 GIL 的低级内部工作原理，我建议您观看 David Beazley 的“<a target="_blank" rel="noopener" href="https://youtu.be/Obt-vMVdM8s">了解 Python GIL”</a>演讲。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文在2018年前就写出来了，阅读时应考虑到Python在这个时间下的飞速发展~</p>
+<p>原文翻译自   <a target="_blank" rel="noopener" href="https://realpython.com/python-gil/%EF%BC%8C%E7%9B%AE%E7%9A%84%E6%98%AF%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB%EF%BC%8C%E5%A6%82%E6%9C%89%E4%BE%B5%E6%9D%83%EF%BC%8C%E8%AF%B7%E8%81%94%E7%B3%BB%E6%88%91%E5%88%A0%E9%99%A4%E3%80%82">https://realpython.com/python-gil/，目的是技术分享，如有侵权，请联系我删除。</a></p>
+<p>希望大家能有所收获~</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513103521.png" alt="Bain 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513103454.png" alt="Bain 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>Bain
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/" title="python中的GIL是什么">http://example.com/2022/05/18/20220518_GIL是什么/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98/" rel="tag"># 面试问题</a>
+              <a href="/tags/GIL/" rel="tag"># GIL</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/" rel="prev" title="python如何读取大文件">
+                  <i class="fa fa-chevron-left"></i> python如何读取大文件
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Bain</span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"waline-server-kohl.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":true,"pageview":false,"placeholder":"欢迎参与讨论呀","avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"visitor":true,"comment_count":true,"requiredFields":[],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>
