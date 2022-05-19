@@ -126,18 +126,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -183,7 +183,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/19/20220519_%E7%BF%BB%E8%AF%91%EF%BC%9A%E6%97%A5%E5%BF%97%E8%A7%A3%E6%9E%90%E7%9A%84%E4%B8%80%E8%88%AC%E6%96%B9%E6%B3%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513105042.png">
@@ -201,7 +201,130 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/" class="post-title-link" itemprop="url">python中的GIL是什么</a>
+          <a href="/2022/05/19/20220519_%E7%BF%BB%E8%AF%91%EF%BC%9A%E6%97%A5%E5%BF%97%E8%A7%A3%E6%9E%90%E7%9A%84%E4%B8%80%E8%88%AC%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">自动化日志解析/模板化的工具及平台介绍</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-05-19 19:30:00 / 修改时间：19:50:42" itemprop="dateCreated datePublished" datetime="2022-05-19T19:30:00+08:00">2022-05-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AIOps/" itemprop="url" rel="index"><span itemprop="name">AIOps</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2022/05/19/20220519_%E7%BF%BB%E8%AF%91%EF%BC%9A%E6%97%A5%E5%BF%97%E8%A7%A3%E6%9E%90%E7%9A%84%E4%B8%80%E8%88%AC%E6%96%B9%E6%B3%95/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2022/05/19/20220519_%E7%BF%BB%E8%AF%91%EF%BC%9A%E6%97%A5%E5%BF%97%E8%A7%A3%E6%9E%90%E7%9A%84%E4%B8%80%E8%88%AC%E6%96%B9%E6%B3%95/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>12k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>11 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <hr>
+<h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p><img src="C:/Users/Administrator/AppData/Roaming/Typora/typora-user-images/image-20220519190855792.png" alt="image-20220519190855792"></p>
+<p>日常工作查找资料的过程中发现了2019年的一篇论文，对日志解析的工具和使用情况进行了详细的统计和对比，对于了解日志解析&#x2F;模板提取领域有很大帮助，故此翻译论文如下。</p>
+<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>在许多软件系统的开发和维护过程中，日志是必不可少的。它们记录详细的运行时信息，使开发人员和支持工程师能够监控他们的系统并剖析异常行为和错误。然而，现代软件系统日益扩大的规模和复杂性使得日志量呈爆炸式增长。</p>
+<p>在许多情况下，传统的手动日志检查方式变得不切实际。许多最近的研究以及工业工具都求助于强大的文本搜索和基于机器学习的分析解决方案。由于日志的非结构化性质，第一个关键步骤是将日志消息解析为结构化数据以供后续分析。</p>
+<p>近年来，自动化日志解析在学术界和工业界都得到了广泛的研究，产生了一系列不同技术的日志解析器。为了更好地理解这些日志解析器的特点，在本文中，我们对自动化日志解析进行了全面的评估研究，并进一步发布了工具和基准，以便于重用。</p>
+<p>更具体地说，我们在跨越分布式系统、超级计算机、操作系统、移动系统、服务器应用程序和独立软件的总共 16 个日志数据集上评估了 13 个日志解析器。我们报告了准确性、稳健性和效率方面的基准测试结果，这在生产中部署自动日志解析时具有实际重要性。</p>
+<p>我们还分享了华为在工业应用中的成功案例和经验教训。我们相信我们的工作可以作为基础，并为未来自动日志解析的研究和部署提供有价值的指导。</p>
+<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/05/19/20220519_%E7%BF%BB%E8%AF%91%EF%BC%9A%E6%97%A5%E5%BF%97%E8%A7%A3%E6%9E%90%E7%9A%84%E4%B8%80%E8%88%AC%E6%96%B9%E6%B3%95/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/18/20220518_Python%E4%B8%AD%E7%9A%84GIL%E6%98%AF%E4%BB%80%E4%B9%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513105042.png">
+      <meta itemprop="name" content="Bain">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bain的博客">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Bain的博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/05/18/20220518_Python%E4%B8%AD%E7%9A%84GIL%E6%98%AF%E4%BB%80%E4%B9%88/" class="post-title-link" itemprop="url">python中的GIL是什么</a>
         </h2>
 
         <div class="post-meta-container">
@@ -219,7 +342,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-05-19 14:55:52" itemprop="dateModified" datetime="2022-05-19T14:55:52+08:00">2022-05-19</time>
+      <time title="修改时间：2022-05-19 15:44:33" itemprop="dateModified" datetime="2022-05-19T15:44:33+08:00">2022-05-19</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -240,8 +363,8 @@
     </span>
     <span class="post-meta-item-text">Waline：</span>
   
-    <a title="waline" href="/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/#waline" itemprop="discussionUrl">
-      <span class="post-comments-count waline-comment-count" data-path="/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/" itemprop="commentCount"></span>
+    <a title="waline" href="/2022/05/18/20220518_Python%E4%B8%AD%E7%9A%84GIL%E6%98%AF%E4%BB%80%E4%B9%88/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2022/05/18/20220518_Python%E4%B8%AD%E7%9A%84GIL%E6%98%AF%E4%BB%80%E4%B9%88/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -273,15 +396,14 @@
           <hr>
 <h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145508151.png" alt="image-20220519145508151"></p>
 <p>一直听说GIL是python的弱点，工作过程中也只了解个皮毛，偶然看到一篇外文讲的很好，因此翻译搬运到这里，如有不足，欢迎提出。</p>
-<h1 id="什么是Python的全局解释锁（Global-Interpreter-Lock-GIL-）"><a href="#什么是Python的全局解释锁（Global-Interpreter-Lock-GIL-）" class="headerlink" title="什么是Python的全局解释锁（Global Interpreter Lock (GIL)）"></a>什么是Python的全局解释锁（Global Interpreter Lock (GIL)）</h1><p>通常面对的大文件有两种形式：</p>
-<p>Python全局解释锁，或者叫 <a target="_blank" rel="noopener" href="https://wiki.python.org/moin/GlobalInterpreterLock">GIL</a>，简单来说，是一个互斥锁（或锁）——<strong>它只允许单个<a target="_blank" rel="noopener" href="https://realpython.com/intro-to-python-threading/">线程</a>持有对 Python 解释器的控制权。</strong></p>
+<h1 id="什么是Python的全局解释锁（Global-Interpreter-Lock-GIL-）"><a href="#什么是Python的全局解释锁（Global-Interpreter-Lock-GIL-）" class="headerlink" title="什么是Python的全局解释锁（Global Interpreter Lock (GIL)）"></a>什么是Python的全局解释锁（Global Interpreter Lock (GIL)）</h1><p>Python全局解释锁，或者叫 <a target="_blank" rel="noopener" href="https://wiki.python.org/moin/GlobalInterpreterLock">GIL</a>，简单来说，是一个互斥锁（或锁）——<strong>它只允许单个<a target="_blank" rel="noopener" href="https://realpython.com/intro-to-python-threading/">线程</a>持有对 Python 解释器的控制权。</strong></p>
 <p>这意味着在任何时间点都只能有一个线程处于执行状态。执行单线程程序的开发人员看不到 GIL 的影响，但它可能成为 CPU 密集型和多线程代码的性能瓶颈。</p>
 <p>由于即使在具有多个 CPU 内核的多线程架构中，GIL在每个时间点也只允许一个线程执行任务，因此 GIL 已成为 Python 长期“受人诟病”的特性。</p>
 <p><strong>在本文中，您将了解 GIL 如何影响 Python 程序的性能，以及如何减轻它可能对代码产生的影响。</strong></p>
 <h1 id="GIL-为-Python-解决了什么问题？"><a href="#GIL-为-Python-解决了什么问题？" class="headerlink" title="GIL 为 Python 解决了什么问题？"></a>GIL 为 Python 解决了什么问题？</h1>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2022/05/18/20220518_GIL%E6%98%AF%E4%BB%80%E4%B9%88/#more" rel="contents">
+              <a class="btn" href="/2022/05/18/20220518_Python%E4%B8%AD%E7%9A%84GIL%E6%98%AF%E4%BB%80%E4%B9%88/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
