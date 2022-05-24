@@ -197,6 +197,299 @@
       </tags>
   </entry>
   <entry>
+    <title>python中关键字梳理</title>
+    <url>/2022/05/24/20220524_Python%E4%B8%AD%E7%9A%84%E5%85%B3%E9%94%AE%E8%AF%8D%E6%A2%B3%E7%90%86/</url>
+    <content><![CDATA[<hr>
+<h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220524161536537.png" alt="image-20220524161536537"></p>
+<p>在日常的开发过程中，Python的各类关键字（或者叫关键词）必不可少，那么，Python究竟有多少个关键字呢，每个关键字你都认识吗，它们的使用场景又是什么呢？本文将一一梳理如下。</p>
+<h1 id="关键字（Keyword）的定义"><a href="#关键字（Keyword）的定义" class="headerlink" title="关键字（Keyword）的定义"></a>关键字（Keyword）的定义</h1><p>在编程中，关键字（Keyword）是编程语言的“保留词”，它对解释器而言代表着某种<strong>特殊含义</strong>。</p>
+<p>因此，这些被编程语言预先定义和使用的关键字，<strong>是不能用作程序代码中的变量名、函数名及其他标识符的。</strong></p>
+<h1 id="Python-中的关键字"><a href="#Python-中的关键字" class="headerlink" title="Python 中的关键字"></a><strong>Python 中的关键字</strong></h1><p>Python目前共有<strong>33</strong>个关键字，可以通过keyword库去获取所有的关键字列表：</p>
+<p>代码输入：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> keyword</span><br><span class="line"> </span><br><span class="line"><span class="comment"># 使用Kwlist方法打印所有的Python关键字</span></span><br><span class="line"><span class="built_in">print</span> (<span class="string">&quot;The list of keywords is : &quot;</span>)</span><br><span class="line"><span class="built_in">print</span> (keyword.kwlist)</span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<p>代码输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">The <span class="built_in">list</span> of keywords <span class="keyword">is</span> : </span><br><span class="line">[<span class="string">&#x27;False&#x27;</span>, <span class="string">&#x27;None&#x27;</span>, <span class="string">&#x27;True&#x27;</span>, <span class="string">&#x27;and&#x27;</span>, <span class="string">&#x27;as&#x27;</span>, <span class="string">&#x27;assert&#x27;</span>, <span class="string">&#x27;break&#x27;</span>, <span class="string">&#x27;class&#x27;</span>, </span><br><span class="line"><span class="string">&#x27;continue&#x27;</span>, <span class="string">&#x27;def&#x27;</span>, <span class="string">&#x27;del&#x27;</span>, <span class="string">&#x27;elif&#x27;</span>, <span class="string">&#x27;else&#x27;</span>, <span class="string">&#x27;except&#x27;</span>, <span class="string">&#x27;finally&#x27;</span>, </span><br><span class="line"><span class="string">&#x27;for&#x27;</span>, <span class="string">&#x27;from&#x27;</span>, <span class="string">&#x27;global&#x27;</span>, <span class="string">&#x27;if&#x27;</span>, <span class="string">&#x27;import&#x27;</span>, <span class="string">&#x27;in&#x27;</span>, <span class="string">&#x27;is&#x27;</span>, <span class="string">&#x27;lambda&#x27;</span>, </span><br><span class="line"><span class="string">&#x27;nonlocal&#x27;</span>, <span class="string">&#x27;not&#x27;</span>, <span class="string">&#x27;or&#x27;</span>, <span class="string">&#x27;pass&#x27;</span>, <span class="string">&#x27;raise&#x27;</span>, <span class="string">&#x27;return&#x27;</span>, </span><br><span class="line"><span class="string">&#x27;try&#x27;</span>, <span class="string">&#x27;while&#x27;</span>, <span class="string">&#x27;with&#x27;</span>, <span class="string">&#x27;yield&#x27;</span>]</span><br></pre></td></tr></table></figure>
+
+<h2 id="关键字列表"><a href="#关键字列表" class="headerlink" title="关键字列表"></a>关键字列表</h2><table>
+<thead>
+<tr>
+<th>and</th>
+<th>as</th>
+<th>assert</th>
+<th>break</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>class</strong></td>
+<td><strong>continue</strong></td>
+<td><strong>def</strong></td>
+<td><strong>del</strong></td>
+</tr>
+<tr>
+<td><strong>elif</strong></td>
+<td><strong>else</strong></td>
+<td><strong>except</strong></td>
+<td><strong>False</strong></td>
+</tr>
+<tr>
+<td><strong>finally</strong></td>
+<td><strong>for</strong></td>
+<td><strong>from</strong></td>
+<td><strong>global</strong></td>
+</tr>
+<tr>
+<td><strong>if</strong></td>
+<td><strong>import</strong></td>
+<td><strong>in</strong></td>
+<td><strong>is</strong></td>
+</tr>
+<tr>
+<td><strong>lambda</strong></td>
+<td><strong>None</strong></td>
+<td><strong>nonlocal</strong></td>
+<td><strong>not</strong></td>
+</tr>
+<tr>
+<td><strong>or</strong></td>
+<td><strong>pass</strong></td>
+<td><strong>raise</strong></td>
+<td><strong>return</strong></td>
+</tr>
+<tr>
+<td><strong>True</strong></td>
+<td><strong>try</strong></td>
+<td><strong>while</strong></td>
+<td><strong>with</strong></td>
+</tr>
+<tr>
+<td><strong>yield</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="如何判断是否是Python关键字"><a href="#如何判断是否是Python关键字" class="headerlink" title="如何判断是否是Python关键字"></a>如何判断是否是Python关键字</h2><p>同样，可以通过keyword的内置方法去做判断：</p>
+<p>代码输入：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> keyword</span><br><span class="line"></span><br><span class="line"><span class="comment"># 判断是否是关键字</span></span><br><span class="line"><span class="built_in">print</span>(keyword.iskeyword(<span class="string">&#x27;hello&#x27;</span>))</span><br><span class="line"><span class="built_in">print</span>(keyword.iskeyword(<span class="string">&#x27;class&#x27;</span>))</span><br></pre></td></tr></table></figure>
+
+<p>代码输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="literal">False</span></span><br><span class="line"><span class="literal">True</span></span><br></pre></td></tr></table></figure>
+
+<p>让我们用一些例子对每个关键字进行讨论吧。</p>
+<h1 id="关键字梳理"><a href="#关键字梳理" class="headerlink" title="关键字梳理"></a>关键字梳理</h1><h2 id="True-False-None"><a href="#True-False-None" class="headerlink" title="True, False, None"></a>True, False, None</h2><ul>
+<li><p><strong>True：</strong>用来表示布尔真。如果表达式为真，则打印“True”。</p>
+</li>
+<li><p><strong>False：</strong>用来表示布尔假。如果表达式为假，则打印“False”。 </p>
+</li>
+<li><p><strong>None</strong>：这是一个特殊的常量，用于表示空值或无效值。<br>此处注意：<strong>0以及任何空容器（例如空列表、空字典等）都不是None。</strong><br><strong>None</strong>是NoneType类的对象。</p>
+<p>True、False、None都可以当做不可变类型看待（类似int,str,tuple），因为所有引用他们的变量都指向同个内存地址。</p>
+</li>
+</ul>
+<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>代码输入：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">print</span>(<span class="literal">False</span> == <span class="number">0</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="literal">True</span> == <span class="number">1</span>)</span><br><span class="line">  </span><br><span class="line"><span class="built_in">print</span>(<span class="literal">True</span> + <span class="literal">True</span> + <span class="literal">True</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="literal">True</span> + <span class="literal">False</span> + <span class="literal">False</span>)</span><br><span class="line">  </span><br><span class="line"><span class="built_in">print</span>(<span class="literal">None</span> == <span class="number">0</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="literal">None</span> == [])</span><br><span class="line"></span><br><span class="line">a = <span class="literal">None</span></span><br><span class="line">b = <span class="literal">None</span></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">id</span>(a) == <span class="built_in">id</span>(b))</span><br></pre></td></tr></table></figure>
+
+<p>代码输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="literal">True</span></span><br><span class="line"><span class="literal">True</span></span><br><span class="line"></span><br><span class="line"><span class="number">3</span></span><br><span class="line"><span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="literal">False</span></span><br><span class="line"><span class="literal">False</span></span><br><span class="line"></span><br><span class="line"><span class="literal">True</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="and-or-not-in-is"><a href="#and-or-not-in-is" class="headerlink" title="and, or, not, in, is"></a>and, or, not, in, is</h2><ul>
+<li><p><strong>and</strong>：是python中的逻辑运算符。<strong>“and”返回第一个布尔为假的值，如果没有找到就返回最后的值</strong>. “and”的真值表如下：</p>
+<table>
+<thead>
+<tr>
+<th align="center">A</th>
+<th align="center">B</th>
+<th align="center">A and B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">True</td>
+<td align="center">True</td>
+<td align="center">True</td>
+</tr>
+<tr>
+<td align="center">True</td>
+<td align="center">False</td>
+<td align="center">False</td>
+</tr>
+<tr>
+<td align="center">False</td>
+<td align="center">True</td>
+<td align="center">False</td>
+</tr>
+<tr>
+<td align="center">False</td>
+<td align="center">False</td>
+<td align="center">False</td>
+</tr>
+</tbody></table>
+<p>3 and 0 <strong>returns 0</strong> </p>
+<p>3 and 10 <strong>returns 10</strong> </p>
+<p>10 or 20 or 30 or 10 or 70 returns <strong>10</strong> </p>
+<p>与像C语言这样的逻辑运算符总是返回布尔值（0 或 1）不同，因此上述语句可能有点令人困惑。按照python 文档的解释如下：</p>
+<blockquote>
+<p>表达式 x and y 首先计算 x；如果 x 为假，则返回其值；否则，计算 y 并返回结果值。</p>
+<p>表达式 x or y 首先计算 x；如果 x 为真，则返回其值；否则，计算 y 并返回结果值。</p>
+</blockquote>
+</li>
+</ul>
+<p><strong>请注意，and 或 or 语句返回的不是True和False，而是返回布尔值为True和False的变量&#x2F;表达式的值。</strong></p>
+<p>这有时很有用，例如要做这么一件事： s 是一个字符串，如果它是空的，则将其替换为默认值foo。则写法如下即可：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">s = s <span class="keyword">or</span> <span class="string">&#x27;foo&#x27;</span> </span><br><span class="line"> </span><br><span class="line"><span class="comment"># 如果不了解这个特性，代码可能如下：</span></span><br><span class="line">s = s <span class="keyword">if</span> s <span class="keyword">else</span> <span class="string">&#x27;foo&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>PS. not 表达式&#x2F;参数  无论其参数的类型如何，它一定都会返回布尔值（例如，not ‘foo’ 会返回 False）</p>
+<ul>
+<li><strong>or</strong>：是python中的逻辑运算符。<strong>“or” 返回第一个布尔为真的值，如果没有找到就返回最后的值。</strong>“or”的真值表如下所示:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">A</th>
+<th align="center">B</th>
+<th align="center">A or B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">True</td>
+<td align="center">True</td>
+<td align="center">True</td>
+</tr>
+<tr>
+<td align="center">True</td>
+<td align="center">False</td>
+<td align="center">True</td>
+</tr>
+<tr>
+<td align="center">False</td>
+<td align="center">True</td>
+<td align="center">True</td>
+</tr>
+<tr>
+<td align="center">False</td>
+<td align="center">False</td>
+<td align="center">False</td>
+</tr>
+</tbody></table>
+<p>3 or 0 <strong>returns 3</strong> </p>
+<p>3 or 10 <strong>returns 3</strong> </p>
+<p>0 or 0 or 3 or 10 or 0 returns <strong>3</strong> </p>
+<p>类似and。</p>
+<ul>
+<li><strong>not：</strong>此逻辑运算符用来反转布尔值。 </li>
+<li><strong>in：</strong>该关键字用来检查容器（list,dict,set等）内的元素是否包含要检测的值。该关键字也用于循环容器。</li>
+<li><strong>is：</strong>此关键字用来检测对象的一致性，即检查两个对象是否指向同一内存地址。</li>
+</ul>
+<h2 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">print</span>(<span class="number">0</span> <span class="keyword">or</span> <span class="number">0</span> <span class="keyword">or</span> <span class="number">3</span> <span class="keyword">or</span> <span class="number">10</span> <span class="keyword">or</span> <span class="number">0</span>)</span><br><span class="line">Output:<span class="number">3</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="number">3</span> <span class="keyword">and</span> <span class="number">10</span>)</span><br><span class="line">Output:<span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="keyword">not</span> <span class="literal">True</span>)</span><br><span class="line">Output:<span class="literal">False</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;ai&#x27;</span> <span class="keyword">in</span> <span class="string">&#x27;bain&#x27;</span>)</span><br><span class="line">Output:<span class="literal">True</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="string">&#x27;bain&#x27;</span>:</span><br><span class="line">	<span class="built_in">print</span>(i,end=<span class="string">&#x27; &#x27;</span>)</span><br><span class="line">Output:b a i n</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(&#123;&#125; <span class="keyword">is</span> &#123;&#125;)</span><br><span class="line">Output:<span class="literal">False</span></span><br><span class="line"></span><br><span class="line">a = <span class="number">1</span></span><br><span class="line">b = <span class="number">1</span></span><br><span class="line"><span class="built_in">print</span>(a <span class="keyword">is</span> b)</span><br><span class="line">Output:<span class="literal">True</span> <span class="comment"># 对于不可变类型，内存地址相同，变量指向同一内存地址</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(&#123;&#125; <span class="keyword">is</span> &#123;&#125;)</span><br><span class="line">Output:<span class="literal">False</span> <span class="comment"># 对于可变类型，内存地址不相同，变量指向不同内存地址</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="for、while、break、continue"><a href="#for、while、break、continue" class="headerlink" title="for、while、break、continue"></a>for、while、break、continue</h2><ul>
+<li><strong>for</strong>：此关键字用于创建循环语句。</li>
+<li><strong>while</strong>：类似“for”，用于创建循环语句。</li>
+<li><strong>break</strong>： 该关键字用于跳出循环体并将执行权传递给紧跟在循环之后的语句。</li>
+<li><strong>continue</strong>：该关键字会跳过循环的当前迭代进入下一迭代，但不结束循环。</li>
+</ul>
+<h2 id="示例-2"><a href="#示例-2" class="headerlink" title="示例"></a>示例</h2><p>代码输入：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 使用for循环</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">	<span class="built_in">print</span>(i, end = <span class="string">&quot; &quot;</span>)</span><br><span class="line">	<span class="comment"># 当循环到6时，跳出循环，执行循环体后面的print语句</span></span><br><span class="line">	<span class="keyword">if</span> i == <span class="number">6</span>:</span><br><span class="line">		<span class="keyword">break</span></span><br><span class="line">	</span><br><span class="line"><span class="built_in">print</span>()</span><br><span class="line">	</span><br><span class="line"><span class="comment"># 使用while循环</span></span><br><span class="line">i = <span class="number">0</span></span><br><span class="line"><span class="keyword">while</span> i &lt;<span class="number">10</span>:</span><br><span class="line">	<span class="comment"># 当i=6时，跳出当前迭代，进入下一迭代，并不结束循环</span></span><br><span class="line">	<span class="keyword">if</span> i == <span class="number">6</span>:</span><br><span class="line">		i+= <span class="number">1</span></span><br><span class="line">		<span class="keyword">continue</span></span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">        <span class="comment"># 当i不等于6时，打印i，并用空格分开</span></span><br><span class="line">        <span class="built_in">print</span>(i, end = <span class="string">&quot; &quot;</span>)  </span><br><span class="line">    i += <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>代码输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span> <span class="number">6</span> </span><br><span class="line"><span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span> <span class="number">7</span> <span class="number">8</span> <span class="number">9</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="if、else、elif"><a href="#if、else、elif" class="headerlink" title="if、else、elif"></a>if、else、elif</h2><ul>
+<li><strong>if</strong>：用于条件判断的控制语句。<strong>表达式为真值则进入“if”语句块。</strong></li>
+<li><strong>else</strong>：用于条件判断的控制语句。<strong>表达式为假值进入“else”语句块。</strong></li>
+<li><strong>elif</strong>：用于条件判断的控制语句。它是“ <strong>else if</strong> ”的缩写</li>
+</ul>
+<p>代码输入：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">i = <span class="number">20</span></span><br><span class="line"><span class="keyword">if</span> (i == <span class="number">10</span>):</span><br><span class="line">	<span class="built_in">print</span> (<span class="string">&quot;i is 10&quot;</span>)</span><br><span class="line"><span class="keyword">elif</span> (i == <span class="number">20</span>):</span><br><span class="line">	<span class="built_in">print</span> (<span class="string">&quot;i is 20&quot;</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">	<span class="built_in">print</span> (<span class="string">&quot;i is not present&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>代码输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">i <span class="keyword">is</span> <span class="number">20</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="def"><a href="#def" class="headerlink" title="def"></a>def</h2><p>def 关键字用于声明用户自定义的函数。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># def keyword</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fun</span>():</span><br><span class="line">	<span class="built_in">print</span>(<span class="string">&quot;Inside Function&quot;</span>)</span><br><span class="line">	</span><br><span class="line">fun()</span><br></pre></td></tr></table></figure>
+
+<p>代码输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">Inside Function</span><br></pre></td></tr></table></figure>
+
+<h2 id="Return-Yield"><a href="#Return-Yield" class="headerlink" title="Return, Yield"></a><strong>Return, Yield</strong></h2><ul>
+<li><strong>return ：</strong>此关键字用于从函数返回值。</li>
+<li><strong>yield ：</strong>此关键字与 return 语句类似，但用于返回生成器。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Return 关键字</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fun</span>():</span><br><span class="line">	S = <span class="number">0</span></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">		S += i</span><br><span class="line">	<span class="keyword">return</span> S</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(fun())</span><br><span class="line"></span><br><span class="line"><span class="comment"># Yield 关键字</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fun</span>():</span><br><span class="line">	S = <span class="number">0</span></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">		S += i</span><br><span class="line">		<span class="keyword">yield</span> S</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> fun():</span><br><span class="line">	<span class="built_in">print</span>(i, end=<span class="string">&#x27; &#x27;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>代码输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="number">45</span></span><br><span class="line"><span class="number">0</span> <span class="number">1</span> <span class="number">3</span> <span class="number">6</span> <span class="number">10</span> <span class="number">15</span> <span class="number">21</span> <span class="number">28</span> <span class="number">36</span> <span class="number">45</span> </span><br></pre></td></tr></table></figure>
+
+<h2 id="class"><a href="#class" class="headerlink" title="class"></a>class</h2><p><strong>class</strong>关键字用于声明用户自定义的类。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Dog</span>:</span><br><span class="line">	</span><br><span class="line">	<span class="comment"># 类属性</span></span><br><span class="line">	attr1 = <span class="string">&quot;mammal&quot;</span></span><br><span class="line">	attr2 = <span class="string">&quot;dog&quot;</span></span><br><span class="line"></span><br><span class="line">	<span class="comment"># 实例方法</span></span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">fun</span>(<span class="params">self</span>):</span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;I&#x27;m a&quot;</span>, self.attr1)</span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;I&#x27;m a&quot;</span>, self.attr2)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 实例化类，得到一个对象</span></span><br><span class="line">Rodger = Dog()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调用类属性和实例方法</span></span><br><span class="line"><span class="built_in">print</span>(Rodger.attr1)</span><br><span class="line">Rodger.fun()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>代码输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">mammal</span><br><span class="line">I<span class="string">&#x27;m a mammal</span></span><br><span class="line"><span class="string">I&#x27;</span>m a dog</span><br></pre></td></tr></table></figure>
+
+<h2 id="With"><a href="#With" class="headerlink" title="With"></a>With</h2><p><strong>with</strong>关键字用于将一些逻辑的执行包装在上下文管理器定义的方法中。在运行函数之前和运行函数之后执行一些操作（最常见的就是with open，用于最后关闭文件，如果不用with，则需要显式的写出close）。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># using with statement</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;file_path&#x27;</span>, <span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> file:</span><br><span class="line">	file.write(<span class="string">&#x27;hello world !&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="as"><a href="#as" class="headerlink" title="as"></a>as</h2><p><strong>as</strong>关键字用于为导入的模块创建别名。即给导入的模块一个新名称。例如，导入math，别名为 mymath。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> math <span class="keyword">as</span> mymath</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(mymath.factorial(<span class="number">5</span>))</span><br><span class="line"></span><br><span class="line">Out:<span class="number">120</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="pass"><a href="#pass" class="headerlink" title="pass"></a>pass</h2><p><strong>pass</strong>是python中的空语句。执行此语句时不具体执行任何逻辑。用作占位符防止发生缩进错误。（比如我先定义了很多需要用到的函数，但是还没想好怎么写内部逻辑，先写个pass在函数体防止IDE执行报错；或者一些抽象函数也会用到pass）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">n = 10</span><br><span class="line">for i in range(n):</span><br><span class="line">	# 用作占位符，等待后续增加具体代码</span><br><span class="line">	pass</span><br></pre></td></tr></table></figure>
+
+<h2 id="Lambda"><a href="#Lambda" class="headerlink" title="Lambda"></a>Lambda</h2><p>Lambda关键字用于用于创建小型匿名函数。 Lambda 函数可以接受任意数量的参数，但只能拥有一个表达式。 这个表达式会被计算并返回结果。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Lambda keyword</span></span><br><span class="line">g = <span class="keyword">lambda</span> x: x*x*x</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(g(<span class="number">7</span>))</span><br><span class="line"></span><br><span class="line">Output:<span class="number">343</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Import-From"><a href="#Import-From" class="headerlink" title="Import, From"></a>Import, From</h2><ul>
+<li><strong>import</strong>：此语句用于将特定模块导入到当前程序中。</li>
+<li><strong>from ：</strong>通常与 import 一起使用，from 用于指定从什么模块导入。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># import keyword</span></span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="built_in">print</span>(math.factorial(<span class="number">10</span>))</span><br><span class="line">Output:<span class="number">3628800</span></span><br><span class="line">    </span><br><span class="line"><span class="comment"># from keyword</span></span><br><span class="line"><span class="keyword">from</span> math <span class="keyword">import</span> factorial</span><br><span class="line"><span class="built_in">print</span>(factorial(<span class="number">10</span>))</span><br><span class="line">Output:<span class="number">3628800</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="try-except-raise-finally-and-assert"><a href="#try-except-raise-finally-and-assert" class="headerlink" title="try, except, raise, finally, and assert"></a>try, except, raise, finally, and assert</h2><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220524195923502.png" alt="image-20220524195923502"></p>
+<ul>
+<li><strong>try ：</strong>该关键字用于异常处理：执行“try”代码块中的代码，如果有任何类型的错误，就会跳到except语句去捕获。</li>
+<li><strong>except ：</strong>与“try”一起使用以捕获异常。</li>
+<li><strong>finally ：</strong>无论“try”块有无异常，“finally”的块总是最后被执行。</li>
+<li><strong>raise：</strong>可以使用 raise 关键字显式地引发异常</li>
+<li><strong>assert：</strong>断言关键字，此函数用于<strong>调试目的</strong>。通常用于检查代码的正确性。如果一个语句被评估为真（assert True），则什么也不会发生，但是当它为假时（assert False），会引发<strong>“ AssertionError ”。</strong>也可以<strong>打印带有错误的消息，用逗号分隔</strong>。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">a = <span class="number">4</span></span><br><span class="line">b = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    <span class="comment"># 可能存在异常的代码块</span></span><br><span class="line">	k = a//b </span><br><span class="line">	<span class="built_in">print</span>(k)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 处理除0异常</span></span><br><span class="line"><span class="keyword">except</span> ZeroDivisionError:</span><br><span class="line">	<span class="built_in">print</span>(<span class="string">&quot;Can&#x27;t divide by zero&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 无论代码被捕获异常，都执行finally块内的语句</span></span><br><span class="line"><span class="keyword">finally</span>:</span><br><span class="line">	<span class="built_in">print</span>(<span class="string">&#x27;This is always executed&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># assert断言</span></span><br><span class="line"><span class="built_in">print</span> (<span class="string">&quot;The value of a / b is : &quot;</span>)</span><br><span class="line"><span class="keyword">assert</span> b != <span class="number">0</span>, <span class="string">&quot;断言b不是0，如果是0，则抛出AssertionError异常&quot;</span></span><br><span class="line"><span class="built_in">print</span> (a / b)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>代码输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">Can<span class="string">&#x27;t divide by zero</span></span><br><span class="line"><span class="string">This is always executed</span></span><br><span class="line"><span class="string">The value of a / b is :</span></span><br><span class="line"><span class="string">AssertionError: Divide by 0 error</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="del"><a href="#del" class="headerlink" title="del"></a><strong>del</strong></h2><p>del 用于删除对对象的引用（需要先了解python对内存回收的引用计数机制）。可以使用 del 删除任何变量或列表值。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">my_variable1 = <span class="number">20</span></span><br><span class="line">my_variable2 = <span class="string">&quot;GeeksForGeeks&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查变量 my_variable1 和 my_variable2 是否存在</span></span><br><span class="line"><span class="built_in">print</span>(my_variable1)</span><br><span class="line"><span class="built_in">print</span>(my_variable2)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除这两个变量对其值的引用</span></span><br><span class="line"><span class="keyword">del</span> my_variable1</span><br><span class="line"><span class="keyword">del</span> my_variable2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 再次检查变量 my_variable1 和 my_variable2 是否存在</span></span><br><span class="line"><span class="built_in">print</span>(my_variable1)</span><br><span class="line"><span class="built_in">print</span>(my_variable2)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>代码输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="number">20</span></span><br><span class="line">GeeksForGeeks</span><br><span class="line">NameError: name <span class="string">&#x27;my_variable1&#x27;</span> <span class="keyword">is</span> <span class="keyword">not</span> defined</span><br></pre></td></tr></table></figure>
+
+<h2 id="Global-Nonlocal"><a href="#Global-Nonlocal" class="headerlink" title="Global, Nonlocal"></a>Global, Nonlocal</h2><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220524200250850.png" alt="image-20220524200250850"></p>
+<ul>
+<li><strong>global：</strong>此关键字用于将函数内部的变量声明为全局变量。</li>
+<li><strong>nonlocal ：</strong>此关键字的作用类似于 global，此关键字声明一个变量为外部函数的变量。</li>
+</ul>
+<p>PS. 具体知识可以去查询“Python中变量的作用域”相关知识。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 全局变量</span></span><br><span class="line">a = <span class="number">15</span></span><br><span class="line">b = <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>():</span><br><span class="line">	c = a + b</span><br><span class="line">	<span class="built_in">print</span>(c)</span><br><span class="line"></span><br><span class="line">add()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fun</span>():</span><br><span class="line">	var1 = <span class="number">10</span> <span class="comment"># 局部变量</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">gun</span>():</span><br><span class="line">		<span class="comment"># 声明嵌套函数内部的变量为上一层函数的变量（指向同一块内存地址）</span></span><br><span class="line">		<span class="keyword">nonlocal</span> var1</span><br><span class="line">		</span><br><span class="line">		var1 = var1 + <span class="number">10</span></span><br><span class="line">		<span class="built_in">print</span>(var1)</span><br><span class="line"></span><br><span class="line">	gun()</span><br><span class="line">fun()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>代码输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="number">25</span></span><br><span class="line"><span class="number">20</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文梳理了python内所有关键字的含义及基本使用示例，希望对你有帮助~</p>
+<p>本文大量参照了<a href="https://www.geeksforgeeks.org/python-keywords/%E7%9A%84%E5%86%85%E5%AE%B9%EF%BC%8C%E7%9B%AE%E7%9A%84%E6%98%AF%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB%EF%BC%8C%E5%A6%82%E6%9C%89%E4%BE%B5%E6%9D%83%EF%BC%8C%E8%AF%B7%E8%81%94%E7%B3%BB%E6%88%91%E5%88%A0%E9%99%A4%E3%80%82">https://www.geeksforgeeks.org/python-keywords/的内容，目的是技术分享，如有侵权，请联系我删除。</a></p>
+<p>希望大家能有所收获~</p>
+]]></content>
+      <categories>
+        <category>python</category>
+      </categories>
+      <tags>
+        <tag>geeksforgeeks</tag>
+        <tag>keywords</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>自动化日志解析/模板化的工具及平台介绍</title>
     <url>/2022/05/19/20220519_%E7%BF%BB%E8%AF%91%EF%BC%9A%E6%97%A5%E5%BF%97%E8%A7%A3%E6%9E%90%E7%9A%84%E4%B8%80%E8%88%AC%E6%96%B9%E6%B3%95/</url>
     <content><![CDATA[<hr>
