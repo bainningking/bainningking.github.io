@@ -18,12 +18,12 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"bainningking.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
     <meta name="description" content="楔子 在一次面试过程中，主考官提出了问题：如何使用python读取大文件 而我一般知道： 1.一般读取、操作文件都是整体读取到内存中，所以在内存不够大的时候，读取大文件会造成非常耗时+内存溢出的问题 2.我在工作场景中一般读取文件都是使用pd.read_csv()这个pandas的命令，因此只回答了这个方法内置了chunksize参数,可以用于按照指定行数读取文件（返回一个可迭代对象，每次迭代一">
 <meta property="og:type" content="article">
 <meta property="og:title" content="python如何读取大文件">
-<meta property="og:url" content="http://example.com/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/index.html">
+<meta property="og:url" content="https://bainningking.github.io/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/index.html">
 <meta property="og:site_name" content="Bain的博客">
 <meta property="og:description" content="楔子 在一次面试过程中，主考官提出了问题：如何使用python读取大文件 而我一般知道： 1.一般读取、操作文件都是整体读取到内存中，所以在内存不够大的时候，读取大文件会造成非常耗时+内存溢出的问题 2.我在工作场景中一般读取文件都是使用pd.read_csv()这个pandas的命令，因此只回答了这个方法内置了chunksize参数,可以用于按照指定行数读取文件（返回一个可迭代对象，每次迭代一">
 <meta property="og:locale" content="zh_CN">
@@ -39,11 +39,11 @@
 <meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220517162535014.png">
 
 
-<link rel="canonical" href="http://example.com/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/">
+<link rel="canonical" href="https://bainningking.github.io/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/","path":"2022/05/16/20220516_python如何读取大文件/","title":"python如何读取大文件"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://bainningking.github.io/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/","path":"2022/05/16/20220516_python如何读取大文件/","title":"python如何读取大文件"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>python如何读取大文件 | Bain的博客</title>
@@ -195,7 +195,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/">
+    <link itemprop="mainEntityOfPage" href="https://bainningking.github.io/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513105042.png">
@@ -371,7 +371,7 @@
   </li>
   <li class="post-copyright-link">
       <strong>本文链接：</strong>
-      <a href="http://example.com/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/" title="python如何读取大文件">http://example.com/2022/05/16/20220516_python如何读取大文件/</a>
+      <a href="https://bainningking.github.io/2022/05/16/20220516_python%E5%A6%82%E4%BD%95%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/" title="python如何读取大文件">https://bainningking.github.io/2022/05/16/20220516_python如何读取大文件/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
