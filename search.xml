@@ -94,111 +94,94 @@
       </tags>
   </entry>
   <entry>
-    <title>python中的GIL是什么</title>
-    <url>/2022/05/18/20220518_Python%E4%B8%AD%E7%9A%84GIL%E6%98%AF%E4%BB%80%E4%B9%88/</url>
+    <title>Python的命名空间和作用域</title>
+    <url>/2022/05/30/20220527_program_Python%E7%9A%84%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E5%92%8C%E4%BD%9C%E7%94%A8%E5%9F%9F/</url>
     <content><![CDATA[<hr>
-<h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145508151.png" alt="image-20220519145508151"></p>
-<p>一直听说GIL是python的弱点，工作过程中也只了解个皮毛，偶然看到一篇外文讲的很好，因此翻译搬运到这里，如有不足，欢迎提出。</p>
-<h1 id="什么是Python的全局解释锁（Global-Interpreter-Lock-GIL-）"><a href="#什么是Python的全局解释锁（Global-Interpreter-Lock-GIL-）" class="headerlink" title="什么是Python的全局解释锁（Global Interpreter Lock (GIL)）"></a>什么是Python的全局解释锁（Global Interpreter Lock (GIL)）</h1><p>Python全局解释锁，或者叫 <a href="https://wiki.python.org/moin/GlobalInterpreterLock">GIL</a>，简单来说，是一个互斥锁（或锁）——<strong>它只允许单个<a href="https://realpython.com/intro-to-python-threading/">线程</a>持有对 Python 解释器的控制权。</strong></p>
-<p>这意味着在任何时间点都只能有一个线程处于执行状态。执行单线程程序的开发人员看不到 GIL 的影响，但它可能成为 CPU 密集型和多线程代码的性能瓶颈。</p>
-<p>由于即使在具有多个 CPU 内核的多线程架构中，GIL在每个时间点也只允许一个线程执行任务，因此 GIL 已成为 Python 长期“受人诟病”的特性。</p>
-<p><strong>在本文中，您将了解 GIL 如何影响 Python 程序的性能，以及如何减轻它可能对代码产生的影响。</strong></p>
-<h1 id="GIL-为-Python-解决了什么问题？"><a href="#GIL-为-Python-解决了什么问题？" class="headerlink" title="GIL 为 Python 解决了什么问题？"></a>GIL 为 Python 解决了什么问题？</h1><span id="more"></span>
+<h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220527181041536.png" alt="image-20220527181041536"></p>
+<p>日常的Python开发中，变量的使用是一个简单但是不注意又会出错的地方，本文从变量的命名空间（NameSpace）和作用域（Scope）的角度去讲解他们的含义和与变量的关系。</p>
+<h1 id="变量名在Python中的含义"><a href="#变量名在Python中的含义" class="headerlink" title="变量名在Python中的含义"></a>变量名在Python中的含义</h1><p>如果您曾经阅读过“ python之禅”（在Python解释器中输入 <code>import this</code>），则会看到最后一行是，</p>
+<p><code>Namespaces are one honking great idea -- let&#39;s do more of those!</code></p>
+<p>翻译过来就是：<strong>命名空间是个绝妙的主意，我们应好好利用它。</strong></p>
+<p>那么到底什么是命名空间(NameSpace)呢？让我们首先看一下什么叫做变量名(Name)吧。</p>
+<p>变量名（Name），或者叫变量标识符（Identifier），简单理解就是某个python对象的名字，而我们知道：Python 中的一切都是对象。变量名是访问底层对象的一种方式。</p>
+<p>例如，当我们进行赋值时：<code>a = 2</code>，<code>2</code>是一个存储在内存中的对象，而a是我们与之关联的名称。我们可以通过内置函数<code>id()</code>获取某个对象在内存中的地址。让我们看看它的使用范例。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">a = <span class="number">2</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;id(2) =&#x27;</span>, <span class="built_in">id</span>(<span class="number">2</span>))</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;id(a) =&#x27;</span>, <span class="built_in">id</span>(a))</span><br></pre></td></tr></table></figure>
 
-<p>Python使用<strong>引用计数机制</strong>进行内存管理。这意味着所有在Python中创建的对象都具有一个引用计数变量，该变量用来表示该对象被引用的数量。当此计数达到零时，说明没有变量和参数引用此对象，则释放该对象占据的内存。</p>
-<p>让我们看一个简短的代码示例，以说明引用计数机制的工作方式：</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> sys</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = []</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>b = a</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>sys.getrefcount(a)</span><br><span class="line"><span class="number">3</span></span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">id</span>(<span class="number">2</span>) = <span class="number">140728274186016</span></span><br><span class="line"><span class="built_in">id</span>(a) = <span class="number">140728274186016</span></span><br></pre></td></tr></table></figure>
 
-<p>在上面的示例中，空列表对象[]的引用计数为3。列表对象被a，b和传递给sys.getrefcount()的参数引用。</p>
-<p>回到GIL上：</p>
-<p>python需要解决的问题是：在两个线程同时想要改变某对象的引用计数值的情况下，如何正确的进行处理以保证程序运行正常。假设没有正确的处理这种情况，它可能会导致内存泄漏问题（对象占用的内存永远不会释放），或者更糟糕的是，在对该对象的引用仍然存在时错误地释放内存。这可能会导致 Python 程序崩溃或其他莫名其妙的错误。</p>
-<p>这个引用计数变量可以通过向所有线程共享的数据结构（对象）添加<strong>锁</strong>来保持安全，这样它们就不会被不一致地修改。</p>
-<p>但是为每个对象或对象组添加一个锁意味着将存在多个锁，这可能会导致另一个问题——死锁（死锁只有在存在多个锁时才会发生）。另一个副作用是由于不同线程重复获取和释放锁会导致性能下降。（解决锁竞争需要通过机制协调，这个过程会增加性能开销）</p>
-<p>GIL 是Python解释器本身自带的锁机制，它添加了一条规则，即对任何 Python 字节码的执行都需要获取全局解释器锁（GIL）。好处是这可以防止死锁（因为只有一个锁）并且不会引入太多的性能开销。坏处是它有效地使任何受 CPU 限制的 Python 程序成为单线程的（多线程无法利用多核CPU并行计算的优势，仍只能每个时间点只利用一个CPU）。</p>
-<p>虽然 Ruby 等其他语言的解释器也使用了GIL，但并不是说线程安全的问题只能用GIL解决。某些语言通过使用引用计数以外的方法（例如垃圾收集）来避免 GIL 对线程内存安全管理的要求。</p>
-<p>换句话说，这通常意味着不使用GIL的语言必须通过添加其他性能提升功能（如 JIT 编译器）来弥补 GIL 单线程性能优势的损失。</p>
-<p>（译者：也就是说GIL是把双刃剑：对于单线程程序会很快，但是损失了多线程并行计算的能力；不使用GIL虽然解决了多线程并行计算的问题，但是会增加单线程运行时的性能开销。）</p>
-<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145105949.png" alt="image-20220519145105949"></p>
-<h1 id="为什么Python仍然选择-GIL-作为解决方案呢？"><a href="#为什么Python仍然选择-GIL-作为解决方案呢？" class="headerlink" title="为什么Python仍然选择 GIL 作为解决方案呢？"></a>为什么Python仍然选择 GIL 作为解决方案呢？</h1><p>那么，为什么 Python 选择了一种看似如此不便利的方法呢？这对开发 Python 语言的人员来说算是做出了一个错误的决定吗？</p>
-<p>嗯，用<a href="https://youtu.be/KVKufdTphKs?t=12m11s">Larry Hastings 的话来说，</a> 设计使用 GIL 正是是让 Python 像今天这样流行的原因之一。</p>
-<p>Python 在操作系统还没有线程这个概念的时候就存在了。 语言被发明的初衷就是要易于使用，以便可以更快的进行开发工作，这一点也让越来越多的开发人员开始使用它。</p>
-<!--译者注：这个描述是有问题的，第一个线程描述在1967年的MVT中就被提到了，而Python是在1990年被荷兰数学与计算机科学家 吉多·范罗苏姆 设计发明的-->
+<p>在这里，两者都指向同一个对象<code>2</code>，因此它们具有相同的<code>id()</code>。让我们让事情变得更有趣一些。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">a = <span class="number">2</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;id(a) =&#x27;</span>, <span class="built_in">id</span>(a))</span><br><span class="line"></span><br><span class="line">a = a+<span class="number">1</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;id(a) =&#x27;</span>, <span class="built_in">id</span>(a))</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;id(3) =&#x27;</span>, <span class="built_in">id</span>(<span class="number">3</span>))</span><br><span class="line"></span><br><span class="line">b = <span class="number">2</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;id(b) =&#x27;</span>, <span class="built_in">id</span>(b))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;id(2) =&#x27;</span>, <span class="built_in">id</span>(<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
 
-<p>在用C语言开发Python的过程中，开发人员为现有的 C 语言库编写了许多扩展，因为这些扩展库的特性在 Python 中是必需的。为了防止不一致的更改，这些 C 扩展需要使用 GIL 提供的线程安全的内存管理机制来保证。</p>
-<p>GIL 易于实现，并且很容易添加到 Python 中。它提升了单线程程序的运行性能——因为只需要管理一个锁。</p>
-<p>GIL使得非线程安全的 C 库变得更容易集成。而正是这些对 C 库的扩展（使用了GIL）成为 Python 被不同社区欣然采用的原因之一。</p>
-<p>因此可以看出，GIL 是CPython开发人员针对在 Python 早期面临的难题的实用解决方案。</p>
-<h1 id="对-Python-多线程程序的影响"><a href="#对-Python-多线程程序的影响" class="headerlink" title="对 Python 多线程程序的影响"></a>对 Python 多线程程序的影响</h1><p>在你查看一个典型的 Python 程序或任何计算机程序时，一般情况下，性能瓶颈主要体现在两个方面：</p>
-<ul>
-<li>CPU密集型程序——受 CPU 能力限制</li>
-<li>IO密集型程序——受 I&#x2F;O 能力限制</li>
-</ul>
-<p>CPU 密集型程序是那些将 CPU 推到使用极限的程序（即频繁使用CPU的程序）。包括进行数学计算的程序，如矩阵乘法、搜索、图像处理等。</p>
-<p>I&#x2F;O 密集型程序是那些需要花费时间来等待用户、文件、数据库、网络等输入输出（Input&#x2F;Output）的程序。I&#x2F;O 密集型程序有时必须等待大量时间，直到它们从数据来源获得他们需要的东西，因为数据来源可能需要在输入&#x2F;输出准备好之前进行自己的处理，例如，用户正在考虑输入什么内容到命令提示符，或数据库正在查询数据的过程。</p>
-<p>让我们来看一个简单的 CPU 密集型程序——执行倒计时任务：</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># single_threaded.py</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</span><br><span class="line"></span><br><span class="line">COUNT = <span class="number">50000000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">countdown</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">while</span> n&gt;<span class="number">0</span>:</span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line">start = time.time()</span><br><span class="line">countdown(COUNT)</span><br><span class="line">end = time.time()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Time taken in seconds -&#x27;</span>, end - start)</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">id</span>(a) = <span class="number">140728274186016</span></span><br><span class="line"><span class="built_in">id</span>(a) = <span class="number">140728274186048</span></span><br><span class="line"><span class="built_in">id</span>(<span class="number">3</span>) = <span class="number">140728274186048</span></span><br><span class="line"><span class="built_in">id</span>(b) = <span class="number">140728274186016</span></span><br><span class="line"><span class="built_in">id</span>(<span class="number">2</span>) = <span class="number">140728274186016</span></span><br></pre></td></tr></table></figure>
 
-<p>在我的 4 核CPU系统上运行此代码会得到以下输出：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">python single_threaded.py</span></span><br><span class="line">Time taken in seconds - 6.20024037361145</span><br></pre></td></tr></table></figure>
+<p>上述程序的在执行中发生了什么？让我们用一张图来解释：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220530192110203.png" alt="image-20220530192110203"></p>
+<p>最初，一个整型对象<code>2</code>被我们创建了，并且用<code>a</code>作为变量名（标识符）与之关联（可以理解为贴标签），当我们这样执行<code>a = a+1</code>时，一个新的整型对象<code>3</code>被我们创建了（先执行左边的语句，创建了3这个对象），此时<code>a</code>与3关联（再执行赋值语句，可以理解为标签从<code>2</code>上面撕下来贴到对象<code>3</code>的上面）。</p>
+<p>此时，id(a)和id(3)的值是相同的，他们都指向内存中存放整型对象3的地址。</p>
+<p>此外，当执行<code>b=2</code>时，一个新的变量名（标签）与整型对象<code>2</code>相关联（把b这个标签贴到了整型对象2上面）</p>
+<p>因为这种方式对于Python来说不用每次赋值都创建一个新的对象（取而代之只是增加或者更换标签），因此是足够高效的。变量名绑定这种动态的特性使得Python更强大。变量名可以指代任何类型的对象。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = <span class="number">5</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = <span class="string">&#x27;Hello World!&#x27;</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br></pre></td></tr></table></figure>
 
-<p>现在我稍微修改下代码，这次使用两个并行线程来执行相同的倒计时任务：</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># multi_threaded.py</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</span><br><span class="line"></span><br><span class="line">COUNT = <span class="number">50000000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">countdown</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">while</span> n&gt;<span class="number">0</span>:</span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line">t1 = Thread(target=countdown, args=(COUNT//<span class="number">2</span>,))</span><br><span class="line">t2 = Thread(target=countdown, args=(COUNT//<span class="number">2</span>,))</span><br><span class="line"></span><br><span class="line">start = time.time()</span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br><span class="line">t1.join()</span><br><span class="line">t2.join()</span><br><span class="line">end = time.time()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Time taken in seconds -&#x27;</span>, end - start)</span><br></pre></td></tr></table></figure>
+<p>上面的代码中，变量名a分别指代了3种对象（整型，字符串，列表）的实例，并且这些语句都可以成功执行，而在Python中，函数也是一种对象，因此变量名同样可以指代函数。（给函数贴上标签）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">printHello</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Hello&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a = printHello</span><br><span class="line"></span><br><span class="line">a()</span><br></pre></td></tr></table></figure>
 
-<p>当我再次运行它时：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">python multi_threaded.py</span></span><br><span class="line">Time taken in seconds - 6.924342632293701</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">Hello</span><br></pre></td></tr></table></figure>
 
-<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145410239.png" alt="image-20220519145410239"></p>
-<p>如您所见，两个版本的完成时间几乎相同。在多线程版本中，GIL 阻止了CPU密集型程序的线程并行执行。</p>
-<p>GIL 对 I&#x2F;O 密集型的多线程程序性能没有太大影响，因为在线程等待 I&#x2F;O 时，锁是在线程之间共享的。</p>
-<p>当程序是完全的 CPU 密集型程序时，比如处理图像的程序，假如使用Python的多线程去做，不仅程序会因为GIL而变成单线程，而且还会看到执行时间增加了，如上面的示例所示。</p>
-<p>这是因为与完全单线程的情况相比，多线程增加了锁的获取和释放的步骤，造成了更多的性能开销的结果。</p>
-<h1 id="为什么-GIL-还没有被移除？"><a href="#为什么-GIL-还没有被移除？" class="headerlink" title="为什么 GIL 还没有被移除？"></a>为什么 GIL 还没有被移除？</h1><p>Python 的开发人员收到了很多关于GIL的抱怨，但是像 Python 这样流行的语言如果删除了 GIL机制 ，这么大的变更如果向后兼容出现了问题，这是不能接受的。</p>
-<p>GIL 当然是可以被删除的，过去开发人员和研究人员已经多次这样尝试，但所有这些尝试都破坏了现有的 C 扩展，因为这些扩展严重依赖于 GIL 提供的解决方案。</p>
-<p>当然，还有其他解决方案可以替代GIL解决C扩展面临的问题，但其中一些会降低单线程和多线程 I&#x2F;O 密集型程序的性能，另外一些则太难了。毕竟，您不希望现有的 Python 程序更新新版本python后运行速度变慢，对吧？</p>
-<p>Python 的创始人和 BDFL（Benevolent Dictator For Life，<strong>终身仁慈独裁者</strong>），Guido van Rossum，于 2007 年 9 月在他的文章<a href="https://www.artima.com/weblogs/viewpost.jsp?thread=214235">“移除 GIL 并不容易”</a>中对社区做出了回答：</p>
-<blockquote>
-<p>“只有在单线程程序（以及多线程 I&#x2F;O 密集型的程序）的性能不降低的情况下，我才会同意在 Python3 中打补丁（解决GIL造成的问题）”</p>
-</blockquote>
-<p>从那以后所做的任何试图解决GIL的尝试都没有满足这一条件。</p>
-<h1 id="为什么GIL没有在-Python-3-中被移除？"><a href="#为什么GIL没有在-Python-3-中被移除？" class="headerlink" title="为什么GIL没有在 Python 3 中被移除？"></a>为什么GIL没有在 Python 3 中被移除？</h1><p>Python 3 （相较Python 2）确实从头开始增加了很多特性，并且在这个过程中，也确实破坏了一些现有的 C 扩展——这些扩展需要更新和移植才能与 Python 3 一起使用。这就是为什么Python 3 的早期版本被社区采用速度较慢的原因。</p>
-<p>但是为什么 GIL 没有在这个过程中被移除呢？</p>
-<p>与 Python 2 相比，删除 GIL 后在单线程性能方面会使 Python 3 变慢，您可以想象这会导致什么结果。目前还没有解决方案能替代 GIL 在单线程性能上的优势。所以结果 Python 3 仍然保有 GIL。</p>
-<p>但 Python 3 确实为现有的 GIL 带来了重大改进——</p>
-<p>我们上面讨论的 GIL 对多线程的影响，仅仅是对“纯粹的CPU密集型”和“纯粹的I&#x2F;O 密集型”的多线程程序的影响，但是实际的程序往往没那么“纯粹”，那么GIL 对于某些线程是CPU密集而某些线程是IO密集的多线程程序的影响又是怎么样的呢？</p>
-<p>在这样的程序中，可以想象，Python 的 GIL 会饿死 I&#x2F;O 密集型线程，因为它们得不到从 CPU 密集型线程获取 GIL 的机会。</p>
-<p>这是因为 Python 内置的一种机制，它会强制线程在连续使用<strong>固定间隔后</strong>释放 GIL ，如果没有其他线程获得 GIL，同一个线程可以继续使用它。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> sys</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="comment"># The interval is set to 100 instructions:(这个间隔被设置为100个指令执行时间)</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>sys.getcheckinterval()</span><br><span class="line"><span class="number">100</span></span><br></pre></td></tr></table></figure>
+<p><code>a</code>同样可以指向一个函数，并且我们可以通过变量名<code>a</code>调用这个函数。</p>
+<h1 id="在Python中，命名空间是什么呢"><a href="#在Python中，命名空间是什么呢" class="headerlink" title="在Python中，命名空间是什么呢"></a>在Python中，命名空间是什么呢</h1><p>既然我们已经理解了变量名（<code>Name</code>）是什么，我们现在可以来讨论命名空间（<code>NameSpace</code>）的概念了。</p>
+<p>简单的说，命名空间（<code>NameSpace</code>）就是一组变量名（<code>Name</code>）的集合。</p>
+<p>在 Python 中，您可以将命名空间想象为您定义的每个变量名到相应对象的映射集。</p>
+<p>不同的命名空间可以在给定时间共存，但是是完全隔离的。</p>
+<p>当我们启动 Python 解释器时，会创建一个包含所有内置名称（<code>built-in</code>）的命名空间，并且只要解释器运行，它就存在。</p>
+<p>这就是我们始终可以从程序的任何部分使用诸如 <code>id(), print()</code>等内置函数的原因。每个模块（<code>module</code>）都会创建自己的全局命名空间。</p>
+<p>这些不同的命名空间是相互隔离的。因此，不同模块中可能存在相同的变量名且不会发生冲突。</p>
+<p>每个模块可以定义不同的函数和类。当函数被调用时会创建一个本地命名空间，其中包含了所有在此函数内定义的变量名。类的情况与函数类似。下图可能有助于理解这个概念。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220530195031406.png" alt="image-20220530195031406"></p>
+<h1 id="Python中的变量作用域（Scope）"><a href="#Python中的变量作用域（Scope）" class="headerlink" title="Python中的变量作用域（Scope）"></a>Python中的变量作用域（Scope）</h1><p>尽管定义了各种独一无二的命名空间，但我们是无法在程序的每个地方都可以访问到全部的命名空间的。这就是作用域的概念。</p>
+<p>作用域是程序的一部分，它表示代码在运行时可以直接获取到的命名空间。</p>
+<p>在程序运行的任何时刻，至少有三个互相嵌套的作用域：</p>
+<ol>
+<li>当前函数的作用域：对于函数内定义的变量（本地变量名→本地命名空间）</li>
+<li>当前模块的作用域：对于模块内定义的变量名（全局变量名→全局命名空间）</li>
+<li>最外层作用域：内置的变量名（所有预先定义的内置变量名→内置命名空间）</li>
+</ol>
+<p>当在函数内部进行变量名的引用时，会在本地命名空间中搜索，然后在全局命名空间中搜索，最后在内置命名空间中搜索。</p>
+<p>如果在一个函数内部另有一个函数，则一个新作用域（内部函数）嵌套在本地命名空间内。</p>
+<h1 id="Python中命名空间和作用域的例子"><a href="#Python中命名空间和作用域的例子" class="headerlink" title="Python中命名空间和作用域的例子"></a>Python中命名空间和作用域的例子</h1><figure class="highlight python"><table><tr><td class="code"><pre><span class="line">a = <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">outer_function</span>():</span><br><span class="line">    b = <span class="number">20</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">inner_func</span>():</span><br><span class="line">        c = <span class="number">30</span></span><br><span class="line">        </span><br></pre></td></tr></table></figure>
 
-<p>这种机制的问题在于，大多数情况下， CPU 密集型的线程会在其他线程获取 GIL 之前重新获取 GIL。这种机制 David Beazley 做了相关研究，可以在<a href="http://www.dabeaz.com/blog/2010/01/python-gil-visualized.html">此处</a>找到可视化的内容。</p>
-<p>这个问题在 2009 年的 Python 3.2 中由 Antoine Pitrou 修复，他<a href="https://mail.python.org/pipermail/python-dev/2009-October/093321.html">添加了一种机制</a>，可以查看其他线程被丢弃的 GIL 获取请求的数量，并且不允许当前线程在其他线程有机会运行之前重新获取 GIL。</p>
-<h1 id="如何处理-Python-的-GIL"><a href="#如何处理-Python-的-GIL" class="headerlink" title="如何处理 Python 的 GIL"></a>如何处理 Python 的 GIL</h1><p>如果 GIL 给您带来问题，您可以尝试以下几种方法：</p>
-<p><strong>多进程与多线程：</strong>最流行的方法是使用多进程方法，在这种方法中使用多个进程而不是线程。每个 Python 进程都有自己的 Python 解释器和内存空间，因此 GIL 不会成为问题。Python 有一个<code>multiprocessing</code>模块可以让我们像这样轻松地创建进程：</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Pool</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">COUNT = <span class="number">50000000</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">countdown</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">while</span> n&gt;<span class="number">0</span>:</span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    pool = Pool(processes=<span class="number">2</span>)</span><br><span class="line">    start = time.time()</span><br><span class="line">    r1 = pool.apply_async(countdown, [COUNT//<span class="number">2</span>])</span><br><span class="line">    r2 = pool.apply_async(countdown, [COUNT//<span class="number">2</span>])</span><br><span class="line">    pool.close()</span><br><span class="line">    pool.join()</span><br><span class="line">    end = time.time()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Time taken in seconds -&#x27;</span>, end - start)</span><br></pre></td></tr></table></figure>
+<p>这里，变量<code>a</code>位于全局命名空间中。变量<code>b</code>位于函数<code>outer_function()</code>的本地命名空间中。<code>c</code>位于嵌套函数<code>inner_func</code>内的本地命名空间中。</p>
+<p>如果我们在<code>inner_func</code>中尝试给<code>b</code>赋值，一个新的变量名会被创建在本地命名空间中，并且与上层函数中的<code>b</code>并不相同（因为不在同一命名空间内，所以不会指向同一内存地址），当我们尝试给<code>a</code>赋值时同理。</p>
+<p>然而，如果我们在内部作用域声明变量名<code>a</code>是全局变量（global），那么所有对a的赋值和引用都会指向这个全局变量<code>a</code>。相似的，如果我们想在<code>inner_func</code>函数里绑定变量名<code>b</code>，使得引用和指代都是<code>outer_function</code>内的<code>b</code>，那么我们必须在<code>inner_func</code>中声明<code>b</code>为非本地变量（nolocal）。下面的例子更清楚的说明了这件事。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">outer_function</span>():</span><br><span class="line">    a = <span class="number">20</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">inner_function</span>():</span><br><span class="line">        a = <span class="number">30</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;a =&#x27;</span>, a)</span><br><span class="line"></span><br><span class="line">    inner_function()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;a =&#x27;</span>, a)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a = <span class="number">10</span></span><br><span class="line">outer_function()</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;a =&#x27;</span>, a)</span><br></pre></td></tr></table></figure>
 
-<p>在我的系统上运行它会给出以下输出：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">python multiprocess.py</span></span><br><span class="line">Time taken in seconds - 4.060242414474487</span><br></pre></td></tr></table></figure>
+<p>如您所想，该程序输出如下：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">a = <span class="number">30</span></span><br><span class="line">a = <span class="number">20</span></span><br><span class="line">a = <span class="number">10</span></span><br></pre></td></tr></table></figure>
 
-<p>与多线程版本相比，性能得到了不错的提升，对吧？</p>
-<p>时间并没有减少到我们上面看到的一半，因为进程管理有它自己的开销。多进程的管理比多线程要重，因此请记住，这可能会成为性能扩展的瓶颈。</p>
-<p><strong>选择另外的 Python 解释器：</strong> Python 有多个解释器实现。<a href="https://realpython.com/c-for-python-programmers/">分别用C</a>、<a href="https://realpython.com/oop-in-python-vs-java/">Java</a> 、C# 和 Python编写的CPython、Jython、IronPython 和<a href="https://realpython.com/pypy-faster-python/">PyPy</a>是最受欢迎的。GIL 仅存在于 CPython 的原始 Python 实现中。如果您的程序及其依赖库可用其他解释器实现，那么您也可以尝试它们。</p>
-<p><strong>做等等党：</strong>虽然许多 Python 用户享受了 GIL 带来的单线程性能优势。但是多线程程序员也不必担心，因为 Python 社区中有一些最聪明的人正在努力从 CPython 中删除 GIL。其中一个比较出名尝试叫<a href="https://github.com/larryhastings/gilectomy">Gilectomy</a>。</p>
-<p>Python 的GIL 通常被认为是Python 的一个疑难杂症。但请记住，作为 Pythonista，您通常只有在编写 C 扩展或在程序中使用CPU密集型的多线程时才会受到它的影响。</p>
-<p>到此为止，本文应该向您提供了 GIL 是什么以及如何在您自己的项目中处理它所需的一切。如果您想了解 GIL 的低级内部工作原理，我建议您观看 David Beazley 的“<a href="https://youtu.be/Obt-vMVdM8s">了解 Python GIL”</a>演讲。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文在2018年前就写出来了，阅读时应考虑到Python在这个时间下的飞速发展~</p>
-<p>原文翻译自   <a href="https://realpython.com/python-gil/">https://realpython.com/python-gil/</a>，目的是技术分享，如有侵权，请联系我删除。</p>
+<p>在这个程序中，三个不同变量名a在独立的三个命名空间中被定义并且被顺序的访问。而在下面的程序中：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">outer_function</span>():</span><br><span class="line">    <span class="keyword">global</span> a</span><br><span class="line">    a = <span class="number">20</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">inner_function</span>():</span><br><span class="line">        <span class="keyword">global</span> a</span><br><span class="line">        a = <span class="number">30</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;a =&#x27;</span>, a)</span><br><span class="line"></span><br><span class="line">    inner_function()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;a =&#x27;</span>, a)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a = <span class="number">10</span></span><br><span class="line">outer_function()</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;a =&#x27;</span>, a)</span><br></pre></td></tr></table></figure>
+
+<p>输出如下：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">a = <span class="number">30</span></span><br><span class="line">a = <span class="number">30</span></span><br><span class="line">a = <span class="number">30</span> </span><br></pre></td></tr></table></figure>
+
+<p>在这里，由于使用了关键字<code>global</code>，因此所有的引用和赋值都是针对全局变量<code>a</code>而进行的。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文对python中变量的命名空间和作用域进行了讲解和示例 ，希望对你有帮助~</p>
+<p>本文大量参照了<a href="https://www.programiz.com/python-programming/namespace%E7%9A%84%E5%86%85%E5%AE%B9%EF%BC%8C%E7%9B%AE%E7%9A%84%E6%98%AF%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB%EF%BC%8C%E5%A6%82%E6%9C%89%E4%BE%B5%E6%9D%83%EF%BC%8C%E8%AF%B7%E8%81%94%E7%B3%BB%E6%88%91%E5%88%A0%E9%99%A4%E3%80%82">https://www.programiz.com/python-programming/namespace的内容，目的是技术分享，如有侵权，请联系我删除。</a></p>
 <p>希望大家能有所收获~</p>
 ]]></content>
       <categories>
         <category>python</category>
       </categories>
       <tags>
-        <tag>面试问题</tag>
-        <tag>GIL</tag>
+        <tag>programiz</tag>
+        <tag>namespace,scope</tag>
       </tags>
   </entry>
   <entry>
     <title>python中关键字梳理</title>
-    <url>/2022/05/24/20220524_Python%E4%B8%AD%E7%9A%84%E5%85%B3%E9%94%AE%E8%AF%8D%E6%A2%B3%E7%90%86/</url>
+    <url>/2022/05/24/20220524_geek_Python%E4%B8%AD%E7%9A%84%E5%85%B3%E9%94%AE%E8%AF%8D%E6%A2%B3%E7%90%86/</url>
     <content><![CDATA[<hr>
 <h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220524161536537.png" alt="image-20220524161536537"></p>
 <p>在日常的开发过程中，Python的各类关键字（或者叫关键词）必不可少，那么，Python究竟有多少个关键字呢，每个关键字你都认识吗，它们的使用场景又是什么呢？本文将一一梳理如下。</p>
@@ -490,8 +473,111 @@
       </tags>
   </entry>
   <entry>
+    <title>python中的GIL是什么</title>
+    <url>/2022/05/18/20220518_Python%E4%B8%AD%E7%9A%84GIL%E6%98%AF%E4%BB%80%E4%B9%88/</url>
+    <content><![CDATA[<hr>
+<h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145508151.png" alt="image-20220519145508151"></p>
+<p>一直听说GIL是python的弱点，工作过程中也只了解个皮毛，偶然看到一篇外文讲的很好，因此翻译搬运到这里，如有不足，欢迎提出。</p>
+<h1 id="什么是Python的全局解释锁（Global-Interpreter-Lock-GIL-）"><a href="#什么是Python的全局解释锁（Global-Interpreter-Lock-GIL-）" class="headerlink" title="什么是Python的全局解释锁（Global Interpreter Lock (GIL)）"></a>什么是Python的全局解释锁（Global Interpreter Lock (GIL)）</h1><p>Python全局解释锁，或者叫 <a href="https://wiki.python.org/moin/GlobalInterpreterLock">GIL</a>，简单来说，是一个互斥锁（或锁）——<strong>它只允许单个<a href="https://realpython.com/intro-to-python-threading/">线程</a>持有对 Python 解释器的控制权。</strong></p>
+<p>这意味着在任何时间点都只能有一个线程处于执行状态。执行单线程程序的开发人员看不到 GIL 的影响，但它可能成为 CPU 密集型和多线程代码的性能瓶颈。</p>
+<p>由于即使在具有多个 CPU 内核的多线程架构中，GIL在每个时间点也只允许一个线程执行任务，因此 GIL 已成为 Python 长期“受人诟病”的特性。</p>
+<p><strong>在本文中，您将了解 GIL 如何影响 Python 程序的性能，以及如何减轻它可能对代码产生的影响。</strong></p>
+<h1 id="GIL-为-Python-解决了什么问题？"><a href="#GIL-为-Python-解决了什么问题？" class="headerlink" title="GIL 为 Python 解决了什么问题？"></a>GIL 为 Python 解决了什么问题？</h1><span id="more"></span>
+
+<p>Python使用<strong>引用计数机制</strong>进行内存管理。这意味着所有在Python中创建的对象都具有一个引用计数变量，该变量用来表示该对象被引用的数量。当此计数达到零时，说明没有变量和参数引用此对象，则释放该对象占据的内存。</p>
+<p>让我们看一个简短的代码示例，以说明引用计数机制的工作方式：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> sys</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = []</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>b = a</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>sys.getrefcount(a)</span><br><span class="line"><span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<p>在上面的示例中，空列表对象[]的引用计数为3。列表对象被a，b和传递给sys.getrefcount()的参数引用。</p>
+<p>回到GIL上：</p>
+<p>python需要解决的问题是：在两个线程同时想要改变某对象的引用计数值的情况下，如何正确的进行处理以保证程序运行正常。假设没有正确的处理这种情况，它可能会导致内存泄漏问题（对象占用的内存永远不会释放），或者更糟糕的是，在对该对象的引用仍然存在时错误地释放内存。这可能会导致 Python 程序崩溃或其他莫名其妙的错误。</p>
+<p>这个引用计数变量可以通过向所有线程共享的数据结构（对象）添加<strong>锁</strong>来保持安全，这样它们就不会被不一致地修改。</p>
+<p>但是为每个对象或对象组添加一个锁意味着将存在多个锁，这可能会导致另一个问题——死锁（死锁只有在存在多个锁时才会发生）。另一个副作用是由于不同线程重复获取和释放锁会导致性能下降。（解决锁竞争需要通过机制协调，这个过程会增加性能开销）</p>
+<p>GIL 是Python解释器本身自带的锁机制，它添加了一条规则，即对任何 Python 字节码的执行都需要获取全局解释器锁（GIL）。好处是这可以防止死锁（因为只有一个锁）并且不会引入太多的性能开销。坏处是它有效地使任何受 CPU 限制的 Python 程序成为单线程的（多线程无法利用多核CPU并行计算的优势，仍只能每个时间点只利用一个CPU）。</p>
+<p>虽然 Ruby 等其他语言的解释器也使用了GIL，但并不是说线程安全的问题只能用GIL解决。某些语言通过使用引用计数以外的方法（例如垃圾收集）来避免 GIL 对线程内存安全管理的要求。</p>
+<p>换句话说，这通常意味着不使用GIL的语言必须通过添加其他性能提升功能（如 JIT 编译器）来弥补 GIL 单线程性能优势的损失。</p>
+<p>（译者：也就是说GIL是把双刃剑：对于单线程程序会很快，但是损失了多线程并行计算的能力；不使用GIL虽然解决了多线程并行计算的问题，但是会增加单线程运行时的性能开销。）</p>
+<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145105949.png" alt="image-20220519145105949"></p>
+<h1 id="为什么Python仍然选择-GIL-作为解决方案呢？"><a href="#为什么Python仍然选择-GIL-作为解决方案呢？" class="headerlink" title="为什么Python仍然选择 GIL 作为解决方案呢？"></a>为什么Python仍然选择 GIL 作为解决方案呢？</h1><p>那么，为什么 Python 选择了一种看似如此不便利的方法呢？这对开发 Python 语言的人员来说算是做出了一个错误的决定吗？</p>
+<p>嗯，用<a href="https://youtu.be/KVKufdTphKs?t=12m11s">Larry Hastings 的话来说，</a> 设计使用 GIL 正是是让 Python 像今天这样流行的原因之一。</p>
+<p>Python 在操作系统还没有线程这个概念的时候就存在了。 语言被发明的初衷就是要易于使用，以便可以更快的进行开发工作，这一点也让越来越多的开发人员开始使用它。</p>
+<!--译者注：这个描述是有问题的，第一个线程描述在1967年的MVT中就被提到了，而Python是在1990年被荷兰数学与计算机科学家 吉多·范罗苏姆 设计发明的-->
+
+<p>在用C语言开发Python的过程中，开发人员为现有的 C 语言库编写了许多扩展，因为这些扩展库的特性在 Python 中是必需的。为了防止不一致的更改，这些 C 扩展需要使用 GIL 提供的线程安全的内存管理机制来保证。</p>
+<p>GIL 易于实现，并且很容易添加到 Python 中。它提升了单线程程序的运行性能——因为只需要管理一个锁。</p>
+<p>GIL使得非线程安全的 C 库变得更容易集成。而正是这些对 C 库的扩展（使用了GIL）成为 Python 被不同社区欣然采用的原因之一。</p>
+<p>因此可以看出，GIL 是CPython开发人员针对在 Python 早期面临的难题的实用解决方案。</p>
+<h1 id="对-Python-多线程程序的影响"><a href="#对-Python-多线程程序的影响" class="headerlink" title="对 Python 多线程程序的影响"></a>对 Python 多线程程序的影响</h1><p>在你查看一个典型的 Python 程序或任何计算机程序时，一般情况下，性能瓶颈主要体现在两个方面：</p>
+<ul>
+<li>CPU密集型程序——受 CPU 能力限制</li>
+<li>IO密集型程序——受 I&#x2F;O 能力限制</li>
+</ul>
+<p>CPU 密集型程序是那些将 CPU 推到使用极限的程序（即频繁使用CPU的程序）。包括进行数学计算的程序，如矩阵乘法、搜索、图像处理等。</p>
+<p>I&#x2F;O 密集型程序是那些需要花费时间来等待用户、文件、数据库、网络等输入输出（Input&#x2F;Output）的程序。I&#x2F;O 密集型程序有时必须等待大量时间，直到它们从数据来源获得他们需要的东西，因为数据来源可能需要在输入&#x2F;输出准备好之前进行自己的处理，例如，用户正在考虑输入什么内容到命令提示符，或数据库正在查询数据的过程。</p>
+<p>让我们来看一个简单的 CPU 密集型程序——执行倒计时任务：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># single_threaded.py</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</span><br><span class="line"></span><br><span class="line">COUNT = <span class="number">50000000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">countdown</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">while</span> n&gt;<span class="number">0</span>:</span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line">start = time.time()</span><br><span class="line">countdown(COUNT)</span><br><span class="line">end = time.time()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Time taken in seconds -&#x27;</span>, end - start)</span><br></pre></td></tr></table></figure>
+
+<p>在我的 4 核CPU系统上运行此代码会得到以下输出：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">python single_threaded.py</span></span><br><span class="line">Time taken in seconds - 6.20024037361145</span><br></pre></td></tr></table></figure>
+
+<p>现在我稍微修改下代码，这次使用两个并行线程来执行相同的倒计时任务：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># multi_threaded.py</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</span><br><span class="line"></span><br><span class="line">COUNT = <span class="number">50000000</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">countdown</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">while</span> n&gt;<span class="number">0</span>:</span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line">t1 = Thread(target=countdown, args=(COUNT//<span class="number">2</span>,))</span><br><span class="line">t2 = Thread(target=countdown, args=(COUNT//<span class="number">2</span>,))</span><br><span class="line"></span><br><span class="line">start = time.time()</span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br><span class="line">t1.join()</span><br><span class="line">t2.join()</span><br><span class="line">end = time.time()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Time taken in seconds -&#x27;</span>, end - start)</span><br></pre></td></tr></table></figure>
+
+<p>当我再次运行它时：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">python multi_threaded.py</span></span><br><span class="line">Time taken in seconds - 6.924342632293701</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220519145410239.png" alt="image-20220519145410239"></p>
+<p>如您所见，两个版本的完成时间几乎相同。在多线程版本中，GIL 阻止了CPU密集型程序的线程并行执行。</p>
+<p>GIL 对 I&#x2F;O 密集型的多线程程序性能没有太大影响，因为在线程等待 I&#x2F;O 时，锁是在线程之间共享的。</p>
+<p>当程序是完全的 CPU 密集型程序时，比如处理图像的程序，假如使用Python的多线程去做，不仅程序会因为GIL而变成单线程，而且还会看到执行时间增加了，如上面的示例所示。</p>
+<p>这是因为与完全单线程的情况相比，多线程增加了锁的获取和释放的步骤，造成了更多的性能开销的结果。</p>
+<h1 id="为什么-GIL-还没有被移除？"><a href="#为什么-GIL-还没有被移除？" class="headerlink" title="为什么 GIL 还没有被移除？"></a>为什么 GIL 还没有被移除？</h1><p>Python 的开发人员收到了很多关于GIL的抱怨，但是像 Python 这样流行的语言如果删除了 GIL机制 ，这么大的变更如果向后兼容出现了问题，这是不能接受的。</p>
+<p>GIL 当然是可以被删除的，过去开发人员和研究人员已经多次这样尝试，但所有这些尝试都破坏了现有的 C 扩展，因为这些扩展严重依赖于 GIL 提供的解决方案。</p>
+<p>当然，还有其他解决方案可以替代GIL解决C扩展面临的问题，但其中一些会降低单线程和多线程 I&#x2F;O 密集型程序的性能，另外一些则太难了。毕竟，您不希望现有的 Python 程序更新新版本python后运行速度变慢，对吧？</p>
+<p>Python 的创始人和 BDFL（Benevolent Dictator For Life，<strong>终身仁慈独裁者</strong>），Guido van Rossum，于 2007 年 9 月在他的文章<a href="https://www.artima.com/weblogs/viewpost.jsp?thread=214235">“移除 GIL 并不容易”</a>中对社区做出了回答：</p>
+<blockquote>
+<p>“只有在单线程程序（以及多线程 I&#x2F;O 密集型的程序）的性能不降低的情况下，我才会同意在 Python3 中打补丁（解决GIL造成的问题）”</p>
+</blockquote>
+<p>从那以后所做的任何试图解决GIL的尝试都没有满足这一条件。</p>
+<h1 id="为什么GIL没有在-Python-3-中被移除？"><a href="#为什么GIL没有在-Python-3-中被移除？" class="headerlink" title="为什么GIL没有在 Python 3 中被移除？"></a>为什么GIL没有在 Python 3 中被移除？</h1><p>Python 3 （相较Python 2）确实从头开始增加了很多特性，并且在这个过程中，也确实破坏了一些现有的 C 扩展——这些扩展需要更新和移植才能与 Python 3 一起使用。这就是为什么Python 3 的早期版本被社区采用速度较慢的原因。</p>
+<p>但是为什么 GIL 没有在这个过程中被移除呢？</p>
+<p>与 Python 2 相比，删除 GIL 后在单线程性能方面会使 Python 3 变慢，您可以想象这会导致什么结果。目前还没有解决方案能替代 GIL 在单线程性能上的优势。所以结果 Python 3 仍然保有 GIL。</p>
+<p>但 Python 3 确实为现有的 GIL 带来了重大改进——</p>
+<p>我们上面讨论的 GIL 对多线程的影响，仅仅是对“纯粹的CPU密集型”和“纯粹的I&#x2F;O 密集型”的多线程程序的影响，但是实际的程序往往没那么“纯粹”，那么GIL 对于某些线程是CPU密集而某些线程是IO密集的多线程程序的影响又是怎么样的呢？</p>
+<p>在这样的程序中，可以想象，Python 的 GIL 会饿死 I&#x2F;O 密集型线程，因为它们得不到从 CPU 密集型线程获取 GIL 的机会。</p>
+<p>这是因为 Python 内置的一种机制，它会强制线程在连续使用<strong>固定间隔后</strong>释放 GIL ，如果没有其他线程获得 GIL，同一个线程可以继续使用它。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> sys</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="comment"># The interval is set to 100 instructions:(这个间隔被设置为100个指令执行时间)</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>sys.getcheckinterval()</span><br><span class="line"><span class="number">100</span></span><br></pre></td></tr></table></figure>
+
+<p>这种机制的问题在于，大多数情况下， CPU 密集型的线程会在其他线程获取 GIL 之前重新获取 GIL。这种机制 David Beazley 做了相关研究，可以在<a href="http://www.dabeaz.com/blog/2010/01/python-gil-visualized.html">此处</a>找到可视化的内容。</p>
+<p>这个问题在 2009 年的 Python 3.2 中由 Antoine Pitrou 修复，他<a href="https://mail.python.org/pipermail/python-dev/2009-October/093321.html">添加了一种机制</a>，可以查看其他线程被丢弃的 GIL 获取请求的数量，并且不允许当前线程在其他线程有机会运行之前重新获取 GIL。</p>
+<h1 id="如何处理-Python-的-GIL"><a href="#如何处理-Python-的-GIL" class="headerlink" title="如何处理 Python 的 GIL"></a>如何处理 Python 的 GIL</h1><p>如果 GIL 给您带来问题，您可以尝试以下几种方法：</p>
+<p><strong>多进程与多线程：</strong>最流行的方法是使用多进程方法，在这种方法中使用多个进程而不是线程。每个 Python 进程都有自己的 Python 解释器和内存空间，因此 GIL 不会成为问题。Python 有一个<code>multiprocessing</code>模块可以让我们像这样轻松地创建进程：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Pool</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">COUNT = <span class="number">50000000</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">countdown</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">while</span> n&gt;<span class="number">0</span>:</span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    pool = Pool(processes=<span class="number">2</span>)</span><br><span class="line">    start = time.time()</span><br><span class="line">    r1 = pool.apply_async(countdown, [COUNT//<span class="number">2</span>])</span><br><span class="line">    r2 = pool.apply_async(countdown, [COUNT//<span class="number">2</span>])</span><br><span class="line">    pool.close()</span><br><span class="line">    pool.join()</span><br><span class="line">    end = time.time()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Time taken in seconds -&#x27;</span>, end - start)</span><br></pre></td></tr></table></figure>
+
+<p>在我的系统上运行它会给出以下输出：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">python multiprocess.py</span></span><br><span class="line">Time taken in seconds - 4.060242414474487</span><br></pre></td></tr></table></figure>
+
+<p>与多线程版本相比，性能得到了不错的提升，对吧？</p>
+<p>时间并没有减少到我们上面看到的一半，因为进程管理有它自己的开销。多进程的管理比多线程要重，因此请记住，这可能会成为性能扩展的瓶颈。</p>
+<p><strong>选择另外的 Python 解释器：</strong> Python 有多个解释器实现。<a href="https://realpython.com/c-for-python-programmers/">分别用C</a>、<a href="https://realpython.com/oop-in-python-vs-java/">Java</a> 、C# 和 Python编写的CPython、Jython、IronPython 和<a href="https://realpython.com/pypy-faster-python/">PyPy</a>是最受欢迎的。GIL 仅存在于 CPython 的原始 Python 实现中。如果您的程序及其依赖库可用其他解释器实现，那么您也可以尝试它们。</p>
+<p><strong>做等等党：</strong>虽然许多 Python 用户享受了 GIL 带来的单线程性能优势。但是多线程程序员也不必担心，因为 Python 社区中有一些最聪明的人正在努力从 CPython 中删除 GIL。其中一个比较出名尝试叫<a href="https://github.com/larryhastings/gilectomy">Gilectomy</a>。</p>
+<p>Python 的GIL 通常被认为是Python 的一个疑难杂症。但请记住，作为 Pythonista，您通常只有在编写 C 扩展或在程序中使用CPU密集型的多线程时才会受到它的影响。</p>
+<p>到此为止，本文应该向您提供了 GIL 是什么以及如何在您自己的项目中处理它所需的一切。如果您想了解 GIL 的低级内部工作原理，我建议您观看 David Beazley 的“<a href="https://youtu.be/Obt-vMVdM8s">了解 Python GIL”</a>演讲。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文在2018年前就写出来了，阅读时应考虑到Python在这个时间下的飞速发展~</p>
+<p>原文翻译自   <a href="https://realpython.com/python-gil/">https://realpython.com/python-gil/</a>，目的是技术分享，如有侵权，请联系我删除。</p>
+<p>希望大家能有所收获~</p>
+]]></content>
+      <categories>
+        <category>python</category>
+      </categories>
+      <tags>
+        <tag>面试问题</tag>
+        <tag>GIL</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>自动化日志解析/模板化的工具及平台介绍</title>
-    <url>/2022/05/19/20220519_%E7%BF%BB%E8%AF%91%EF%BC%9A%E6%97%A5%E5%BF%97%E8%A7%A3%E6%9E%90%E7%9A%84%E4%B8%80%E8%88%AC%E6%96%B9%E6%B3%95/</url>
+    <url>/2022/05/19/20220519_%E8%AE%BA%E6%96%87%E7%BF%BB%E8%AF%91%EF%BC%9A%E6%97%A5%E5%BF%97%E8%A7%A3%E6%9E%90%E7%9A%84%E4%B8%80%E8%88%AC%E6%96%B9%E6%B3%95/</url>
     <content><![CDATA[<hr>
 <h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220519195652.png" alt="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220519195652.png"></p>
 <p>日常工作查找资料的过程中发现了2019年的一篇论文，对日志解析的工具和使用情况进行了详细的统计和对比，对于了解日志解析&#x2F;模板提取领域有很大帮助，故此翻译论文如下。</p>
