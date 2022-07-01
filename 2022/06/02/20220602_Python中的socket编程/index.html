@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.1.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"bainningking.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="楔子网络编程是python应用的一块大领域，一直以来各种web应用框架（django, flask等）帮我们处理了底层的各种复杂的网络通信和数据处理，降低了开发人员的开发难度，但是另一方面也使得底层的东西被包裹在重重的框架下面无法看清和学习，因此本文从socket编程开始去一探网络编程的冰山一角。 前言socket，翻译为插座，插口，编程上翻译为套接字，初看不太懂为什么叫这个名字，且将socke">
+<meta property="og:type" content="article">
+<meta property="og:title" content="python中的socket编程">
+<meta property="og:url" content="https://bainningking.github.io/2022/06/02/20220602_Python%E4%B8%AD%E7%9A%84socket%E7%BC%96%E7%A8%8B/index.html">
+<meta property="og:site_name" content="Bain的博客">
+<meta property="og:description" content="楔子网络编程是python应用的一块大领域，一直以来各种web应用框架（django, flask等）帮我们处理了底层的各种复杂的网络通信和数据处理，降低了开发人员的开发难度，但是另一方面也使得底层的东西被包裹在重重的框架下面无法看清和学习，因此本文从socket编程开始去一探网络编程的冰山一角。 前言socket，翻译为插座，插口，编程上翻译为套接字，初看不太懂为什么叫这个名字，且将socke">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/sockets-tcp-flow.1da426797e37.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220606165635163.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220606171028486.png">
+<meta property="article:published_time" content="2022-06-02T11:30:00.000Z">
+<meta property="article:modified_time" content="2022-06-07T08:03:06.090Z">
+<meta property="article:author" content="Bain">
+<meta property="article:tag" content="socket">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/sockets-tcp-flow.1da426797e37.jpg">
+
+
+<link rel="canonical" href="https://bainningking.github.io/2022/06/02/20220602_Python%E4%B8%AD%E7%9A%84socket%E7%BC%96%E7%A8%8B/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://bainningking.github.io/2022/06/02/20220602_Python%E4%B8%AD%E7%9A%84socket%E7%BC%96%E7%A8%8B/","path":"2022/06/02/20220602_Python中的socket编程/","title":"python中的socket编程"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>python中的socket编程 | Bain的博客</title>
+  
+
+
+
+
+<link rel="dns-prefetch" href="waline-server-kohl.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Bain的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">种一棵树最好的时间是十年前，其次是现在。</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A5%94%E5%AD%90"><span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Socket-API%E6%80%BB%E8%A7%88"><span class="nav-text">Socket API总览</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TCP-Sockets"><span class="nav-text">TCP Sockets</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Client-and-Server%E7%9A%84%E7%AC%AC%E4%B8%80%E6%AC%A1%E8%BF%9E%E6%8E%A5"><span class="nav-text">Client and Server的第一次连接</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Server%E9%83%A8%E5%88%86"><span class="nav-text">Server部分</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#bind%E6%96%B9%E6%B3%95%E6%8E%A5%E5%8F%97%E7%9A%84%E5%8F%82%E6%95%B0"><span class="nav-text">bind方法接受的参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#listen%E6%96%B9%E6%B3%95"><span class="nav-text">listen方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#accept%E6%96%B9%E6%B3%95"><span class="nav-text">accept方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Client%E9%83%A8%E5%88%86"><span class="nav-text">Client部分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8Server%E5%92%8CClient"><span class="nav-text">启动Server和Client</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E5%A5%97%E6%8E%A5%E5%AD%97%EF%BC%88Socket%EF%BC%89%E7%8A%B6%E6%80%81"><span class="nav-text">查看套接字（Socket）状态</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CS%E9%80%9A%E4%BF%A1%E8%BF%87%E7%A8%8B"><span class="nav-text">CS通信过程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E5%A4%9A%E4%B8%AA%E8%BF%9E%E6%8E%A5"><span class="nav-text">如何处理多个连接</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%94%AF%E6%8C%81%E5%A4%9A%E4%B8%AA%E8%BF%9E%E6%8E%A5%E7%9A%84Client%E5%92%8CServer"><span class="nav-text">支持多个连接的Client和Server</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E8%BF%9E%E6%8E%A5%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="nav-text">多连接服务端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E8%BF%9E%E6%8E%A5%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-text">多连接客户端</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Bain"
+      src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513105042.png">
+  <p class="site-author-name" itemprop="name">Bain</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/bainningking" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;bainningking" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:bainningking@gmail.com" title="E-Mail → mailto:bainningking@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://bainningking.github.io/2022/06/02/20220602_Python%E4%B8%AD%E7%9A%84socket%E7%BC%96%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513105042.png">
+      <meta itemprop="name" content="Bain">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bain的博客">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="python中的socket编程 | Bain的博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          python中的socket编程
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-06-02 19:30:00" itemprop="dateCreated datePublished" datetime="2022-06-02T19:30:00+08:00">2022-06-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-06-07 16:03:06" itemprop="dateModified" datetime="2022-06-07T16:03:06+08:00">2022-06-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/python/network/" itemprop="url" rel="index"><span itemprop="name">network</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2022/06/02/20220602_Python%E4%B8%AD%E7%9A%84socket%E7%BC%96%E7%A8%8B/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2022/06/02/20220602_Python%E4%B8%AD%E7%9A%84socket%E7%BC%96%E7%A8%8B/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>9.5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <hr>
+<h1 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h1><p>网络编程是python应用的一块大领域，一直以来各种web应用框架（django, flask等）帮我们处理了底层的各种复杂的网络通信和数据处理，降低了开发人员的开发难度，但是另一方面也使得底层的东西被包裹在重重的框架下面无法看清和学习，因此本文从socket编程开始去一探网络编程的冰山一角。</p>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>socket，翻译为插座，插口，编程上翻译为套接字，初看不太懂为什么叫这个名字，且将socket通信的双方（B&#x2F;S或者C&#x2F;S）理解为插座和插头的关系吧。</p>
+<p>socket和socket API 被用于通过网络发送消息。它们提供了一种<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Inter-process_communication">进程间通信 (IPC)</a>形式。网络可以是计算机的逻辑的本地的网络（localhost），也可以是物理连接到外部网络的网络。一个明显的例子是您通过 ISP(Internet Service Provider，互联网服务提供商，就是电信、移动运营商等) 连接到的 Internet（目前的互联网）。</p>
+<p>本次学习共有如下内容：</p>
+<ul>
+<li>建立一个简单的，可以互相通信的socket服务器和客户端</li>
+<li>在上面的基础上建立可以同时处理<strong>多个连接的改进版本</strong></li>
+<li>建立一个服务器-客户端应用程序，其功能类似于一个成熟的<strong>socket应用程序</strong>，具有自己的<strong>自定义标头和内容</strong></li>
+</ul>
+<span id="more"></span>
+
+<p>网络和套接字编程是一个大的主题，python官网上已经有很详细的说明，但如果你对这块是个新手，那么估计和我一样阅读起来难度很大，本文就是为了解决这个问题，力求通过简单的示例和详细的说明去揭开这个大主题的一层面纱，希望你能有所收获~</p>
+<h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>socket已经有很长的历史了。它的使用<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Network_socket#History">起源于 1971 年的 ARPANET</a>，后来在 1983 年，发布成为伯克利软件 (BSD) 操作系统中的一个 API，称为 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Berkeley_sockets">Berkeley sockets</a>。</p>
+<p>当互联网在20世纪90年代随着万维网（World Wide Web）起飞时，对应的网络编程也随之风生水起。Web 服务器和浏览器（BS架构）并不是唯一利用新生网络和socket编程的应用程序，他们在各种类型和规模的客户端-服务器应用程序（CS架构）也得到了广泛使用。</p>
+<p>一般来说，套接字应用程序用在客户端-服务器架构上（CS架构）的比较多，其中一侧充当服务器并等待来自客户端的连接。本文将专注于<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Berkeley_sockets">Internet 套接字</a>的 API ，有时称为 Berkeley 或 BSD 套接字。除此之外还有<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Unix_domain_socket">Unix 域套接字</a>，它只能用于在同一主机上的进程之间进行通信。</p>
+<h1 id="Socket-API总览"><a href="#Socket-API总览" class="headerlink" title="Socket API总览"></a>Socket API总览</h1><p>Python 的<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/socket.html">socket 模块</a>为<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Berkeley_sockets">Berkeley sockets API</a>提供了一个接口。这也是本文中将学习使用的模块。</p>
+<p>此模块中主要的API函数和方法如下：</p>
+<ul>
+<li><code>socket()</code></li>
+<li><code>.bind()</code></li>
+<li><code>.listen()</code></li>
+<li><code>.accept()</code></li>
+<li><code>.connect()</code></li>
+<li><code>.connect_ex()</code></li>
+<li><code>.send()</code></li>
+<li><code>.recv()</code></li>
+<li><code>.close()</code></li>
+</ul>
+<p>Python 提供了能够直接映射到操作系统调用的 API——socket（内置进标准库了），使用方便且接口调用保持一致。</p>
+<p>除了socket库，Python 还有更高级的一些的类，他们封装了底层的socket函数。尽管本文没有介绍它，但您可以查看<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/socketserver.html">socketserver 模块</a>，这是一个网络服务器框架。还有许多模块可以实现更高级别的 Internet 协议，例如 HTTP 和 SMTP。有关概述，请参阅<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/internet.html">Internet 协议和支持</a>。</p>
+<h1 id="TCP-Sockets"><a href="#TCP-Sockets" class="headerlink" title="TCP Sockets"></a>TCP Sockets</h1><p>您将使用<code>socket.socket()</code>来创建一个套接字对象，并将套接字类型指定为<code>socket.SOCK_STREAM</code>。当您这样做时，使用的默认协议是<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Transmission_Control_Protocol">传输控制协议 (TCP)</a>。这是一个很好的默认值，可能是正是您想要的。</p>
+<p>为什么要使用 TCP（Transmission Control Protocol）？传输控制协议 (TCP)的优点是什么呢？</p>
+<ul>
+<li><strong>协议是可靠的：</strong>丢弃在网络中的数据包将会被发送方检测并重传。</li>
+<li><strong>保证有序的数据传递：</strong>应用程序按照发送者写入的顺序读取数据。</li>
+</ul>
+<p>相比之下，使用<code>socket.SOCK_DGRAM</code>创建的<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/User_Datagram_Protocol">用户数据报协议 (UDP)</a>套接字是不可靠的，并且接收方读取的数据可能与发送方的写入顺序不一致。</p>
+<p>为什么这两点很重要呢？网络是一个最大努力传输（best-effort）的系统。一般情况下，有很多突发情况是无法保证您的数据准确的到达目的地，或者给您的数据是准确完整有序的。</p>
+<p>网络设备（例如路由器和交换机）的可用带宽有限，并且会受自身固有的系统限制——它们具有 CPU、内存、总线和接口数据包缓冲区，就像您的客户端和服务器一样。TCP 协议使您不必担心<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Packet_loss">数据包丢失</a>、无序数据到达以及在您通过网络进行通信时总是会发生的其他陷阱。</p>
+<p>为了更好地理解这一点，请查看下图——TCP的套接字 API 调用过程和数据流的顺序：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/sockets-tcp-flow.1da426797e37.jpg" alt="img"></p>
+<p>左侧一列代表服务器。右侧一列代表客户端。</p>
+<p>从左上角开始，注意服务器为设置监听状态而进行的 API 调用：</p>
+<ul>
+<li><code>socket()</code></li>
+<li><code>bind()</code></li>
+<li><code>listen()</code></li>
+<li><code>accept()</code></li>
+</ul>
+<p>服务端首先要建立自己的socket对象，并对外监听。它侦听来自客户端的连接。当客户端连接时，服务端调用<code>.accept()</code>以接受或完成连接。</p>
+<p>客户端调用<code>.connect()</code>建立与服务端的连接并启动三次握手。握手步骤很重要，因为它确保连接的每一端都可以在网络中访问，换句话说，客户端可以访问服务器，反之亦然。</p>
+<p>流程的中间是往返部分，在客户端和服务器之间使用调用<code>.send()</code>和<code>.recv()</code>来交换数据。</p>
+<p>在流程的底部，客户端和服务器关闭各自的套接字连接。</p>
+<h1 id="Client-and-Server的第一次连接"><a href="#Client-and-Server的第一次连接" class="headerlink" title="Client and Server的第一次连接"></a>Client and Server的第一次连接</h1><p>现在，相信您已经了解了socket API的总体概况，并且对客户端和服务器如何通信有了初步印象。基于此我们可以创建第一个可以同学客户端和服务器了。我们将从简单的实现开始：1）建立客户端和服务端。2）服务端将返回任何从客户端收到的内容。</p>
+<h2 id="Server部分"><a href="#Server部分" class="headerlink" title="Server部分"></a>Server部分</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># echo-server.py</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line">HOST = <span class="string">&quot;127.0.0.1&quot;</span>  <span class="comment"># 标准的环回接口地址(localhost)，用于同台主机同时作为客户端和服务端</span></span><br><span class="line">PORT = <span class="number">65432</span>  <span class="comment"># 端口监听 非特权端口需要端口号 &gt; 1023)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> socket.socket(socket.AF_INET, socket.SOCK_STREAM) <span class="keyword">as</span> s:</span><br><span class="line">    s.bind((HOST, PORT))</span><br><span class="line">    s.listen()</span><br><span class="line">    conn, addr = s.accept()</span><br><span class="line">    <span class="keyword">with</span> conn:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;客户端 <span class="subst">&#123;addr&#125;</span> 进行了访问&quot;</span>)</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            data = conn.recv(bufsize=<span class="number">1024</span>)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> data:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            conn.sendall(data)</span><br></pre></td></tr></table></figure>
+
+<p>现在不用担心对上述的代码有疑问，接下来我们一起逐句的分析每行代码的作用~</p>
+<p>所以，上述的代码究竟做了什么事情呢？</p>
+<p>首先，socket.socket（）方法创建了一个支持上下文管理器类型的套接字对象（socket object），因此可以用with语句使用它——这样就无需显示的调用s.close()方法了，因为已经在上下文里面执行了。</p>
+<p>其次，socket对象接受两个参数：1）地址家族；2）socket的类型。socket.AF_INET表示是IPv4的网络地址。socket.SOCK_STREAM表示是TCP类型的socket（TCP是用于网络中传输消息的协议）。</p>
+<p>而后，.bind（）方法用于将socket对象与指定的网络接口（IP地址）和端口号相关联。</p>
+<h3 id="bind方法接受的参数"><a href="#bind方法接受的参数" class="headerlink" title="bind方法接受的参数"></a>bind方法接受的参数</h3><p>传递给.bind（）的参数取决于已实例化的socket的地址家族是什么。在此示例中，我们使用的是socket.af_inet（ipv4）。因此，bind接受一个双元素元组：（<strong>主机</strong>，<strong>端口</strong>）。</p>
+<p><strong>主机</strong>可以是主机名，IP地址或空字符串。如果使用IP地址，则主机应为IPv4格式的地址字符串。IP地址127.0.0.1是环回接口的标准IPv4地址，因此只有同主机上的进程才能连接到服务器。如果你传递的是一个空字符串，服务器将接受所有可用的IPv4接口上的连接。</p>
+<p><strong>端口</strong>代表TCP端口号，它可以接受客户端的连接。它的取值范围是1到65535的整数（0是被保留的）。如果端口号小于1024，则某些系统可能需要使用root账户。</p>
+<p>下面是一段关于在.bind（）中使用主机参数的说明：</p>
+<blockquote>
+<p>“如果您在IPv4&#x2F;V6套接字地址的主机部分中使用主机名，则该程序可能会执行非确定性行为，因为Python使用的是从DNS解析器返回的第一个地址。根据DNS解析器以及主机的配置，套接字地址将以不同的方式分配到实际的IPv4&#x2F;V6地址中（即同一主机名可能对应不同的IP地址）。为了确定性行为，请在主机部分使用IP地址而不是主机名”</p>
+</blockquote>
+<p>所以，在使用主机名时，第一次运行应用程序时，您可能会获得地址10.1.2.3。下次，您将获得不同的地址，192.168.0.1。第三次，您可以获得172.16.7.8，依此类推。</p>
+<h3 id="listen方法"><a href="#listen方法" class="headerlink" title="listen方法"></a>listen方法</h3><p>listen（）使服务端可以接受来自外部的连接。它使服务端成为一个时刻监听的服务。</p>
+<p>该<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/socket.html#socket.socket.listen"><code>.listen()</code></a>方法有一个<code>backlog</code>参数。它指定系统在拒绝新连接之前将允许的未接受连接的数量。从 Python 3.5 起，它变成可选参数。如果未指定，<code>backlog</code>则选择系统默认值。</p>
+<p>如果您的服务器同时接收到大量连接请求，通过设置待处理连接的队列的最大长度来增加该<code>backlog</code>的值可能会有所帮助。最大值取决于系统。例如，在 Linux 上，请参阅<a target="_blank" rel="noopener" href="https://serverfault.com/questions/518862/will-increasing-net-core-somaxconn-make-a-difference/519152"><code>/proc/sys/net/core/somaxconn</code></a>.</p>
+<h3 id="accept方法"><a href="#accept方法" class="headerlink" title="accept方法"></a>accept方法</h3><p><a target="_blank" rel="noopener" href="https://docs.python.org/3/library/socket.html#socket.socket.accept"><code>.accept()</code></a>方法会<strong>阻塞执行</strong>并等待客户端传入连接。当客户端连接时，它返回一个表示连接的新套接字对象和一个保存客户端地址的元组。对于IPv4地址元组将包含<code>(host, port)</code> ，对于IPv6地址元组则包含<code>(host, port, flowinfo, scopeid)</code>。</p>
+<p>必须记住的是，现在有一个来自<code>.accept()</code>方法的新的套接字对象（<strong>conn</strong>）。这很重要，因为它是将用于与客户端通信的套接字。它与服务端用来接受连接的监听套接字对象（<strong>s</strong>）不同。</p>
+<p><code>accept()</code>提供客户端套接字对象<code>conn</code>后，将使用while死循环来循环对<code>conn.recv()</code>的<a target="_blank" rel="noopener" href="https://realpython.com/python-sockets/#blocking-calls">阻塞</a>调用。这会读取客户端发送的任何数据并使用<code>conn.sendall()</code>发送回去。</p>
+<p>如果<code>conn.recv()</code>返回一个空字节对象<code>b&#39;&#39;</code>，则表示客户端关闭连接并且循环终止。用于<code>conn</code>的<code>with</code>语句将在代码的末尾自动关闭套接字。</p>
+<h2 id="Client部分"><a href="#Client部分" class="headerlink" title="Client部分"></a>Client部分</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># echo-client.py</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line">HOST = <span class="string">&quot;127.0.0.1&quot;</span>  <span class="comment"># 服务端使用的主机地址或主机名</span></span><br><span class="line">PORT = <span class="number">65432</span>  <span class="comment"># 服务端使用的端口</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> socket.socket(socket.AF_INET, socket.SOCK_STREAM) <span class="keyword">as</span> s:</span><br><span class="line">    s.connect((HOST, PORT))</span><br><span class="line">    s.sendall(<span class="string">b&quot;Hello, world&quot;</span>)</span><br><span class="line">    data = s.recv(bufsize=<span class="number">1024</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;接收数据： <span class="subst">&#123;data!r&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>与服务器相比，客户端非常简单。它创建一个套接字对象，用<code>.connect()</code>连接服务器并调用<code>s.sendall()</code>以发送消息。最后，它调用<code>s.recv()</code>读取服务器的回复，然后将其打印出来。</p>
+<h2 id="启动Server和Client"><a href="#启动Server和Client" class="headerlink" title="启动Server和Client"></a>启动Server和Client</h2><p>打开终端或命令提示符，导航到包含脚本的目录，确保在路径上安装了 Python 3.6 或更高版本，然后运行服务器：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@bain pyscript]# python echo-server.py </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>此时此终端将出现挂起。那是因为服务器因为<code>.accept()</code>方法而被阻塞或挂起。它正在等待客户端连接。现在，打开另一个终端窗口或命令提示符并运行客户端：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@bain pyscript]# python echo-client.py </span><br><span class="line">接收数据： b&#x27;Hello, world&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>在服务器窗口中，会看到如下内容：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@bain pyscript]# python echo-server.py </span><br><span class="line">客户端 (&#x27;127.0.0.1&#x27;, 41282) 进行了访问</span><br></pre></td></tr></table></figure>
+
+<p>在上面的输出中，服务器打印了从<code>s.accept()</code>方法返回的<code>addr</code>元组. 这是客户端的 IP 地址和 TCP 端口号。端口号<code>64623</code>在不同的计算机上运行它时，可能会有所不同。</p>
+<h2 id="查看套接字（Socket）状态"><a href="#查看套接字（Socket）状态" class="headerlink" title="查看套接字（Socket）状态"></a>查看套接字（Socket）状态</h2><p>要查看主机上套接字的当前状态，请使用<code>netstat</code> 它默认在 macOS、Linux 和 Windows 上可用。</p>
+<p>这是启动服务器进行监听时 linux 的 netstat 输出：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@bain pyscript]# netstat -an</span><br><span class="line">Active Internet connections (servers and established)</span><br><span class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State      </span><br><span class="line">tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN     </span><br><span class="line">tcp        0      0 127.0.0.1:65432         0.0.0.0:*               LISTEN     </span><br><span class="line">tcp        0      0 127.0.0.1:25            0.0.0.0:*               LISTEN     </span><br><span class="line">tcp        0      0 192.168.10.101:22       192.168.10.100:10167    ESTABLISHED</span><br><span class="line">tcp        0     36 192.168.10.101:22       192.168.10.100:6420     ESTABLISHED</span><br><span class="line">tcp6       0      0 :::22                   :::*                    LISTEN     </span><br><span class="line">tcp6       0      0 ::1:25                  :::*                    LISTEN     </span><br><span class="line">udp        0      0 127.0.0.1:323           0.0.0.0:*                          </span><br><span class="line">udp6       0      0 ::1:323                 :::*                               </span><br><span class="line">raw6       0      0 :::58                   :::*                    7          </span><br></pre></td></tr></table></figure>
+
+<p>注意<code>Local Address</code>是<code>127.0.0.1.65432</code>。如果<code>echo-server.py</code>使用了<code>HOST = &quot;&quot;</code>而不是<code>HOST = &quot;127.0.0.1&quot;</code>，netstat 会显示：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@bain pyscript]# netstat -an</span><br><span class="line">Active Internet connections (servers and established)</span><br><span class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State      </span><br><span class="line">tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN     </span><br><span class="line">tcp        0      0 0.0.0.0:65432           0.0.0.0:*               LISTEN     </span><br><span class="line">tcp        0      0 127.0.0.1:25            0.0.0.0:*               LISTEN     </span><br><span class="line">tcp        0      0 192.168.10.101:22       192.168.10.100:10167    ESTABLISHED</span><br><span class="line">tcp        0     36 192.168.10.101:22       192.168.10.100:6420     ESTABLISHED</span><br><span class="line">tcp6       0      0 :::22                   :::*                    LISTEN     </span><br><span class="line">tcp6       0      0 ::1:25                  :::*                    LISTEN     </span><br><span class="line">udp        0      0 127.0.0.1:323           0.0.0.0:*                          </span><br><span class="line">udp6       0      0 ::1:323                 :::*                               </span><br><span class="line">raw6       0      0 :::58                   :::*                    7          </span><br></pre></td></tr></table></figure>
+
+<p><code>Local Address</code>是 <code>0.0.0.0.65432</code>，这意味着支持IPv4地址族的所有可用主机接口都将用于接受传入连接。在此示例中，<code>socket.AF_INET</code>在对<code>socket()</code>的调用中使用了 (IPv4) 。您可以在<code>Proto</code>列中看到这一点：<code>tcp</code>。</p>
+<p>需要注意的是<code>Proto</code>、<code>Local Address</code>和<code>(state)</code>列。在上面的输出里，netstat 命令显示服务器正在使用 IPv4 TCP 套接字 ( <code>tcp</code>)，且接受所有接口连接本机端口65432 （<code>0.0.0.0:65432</code>），且目前正处于监听状态 ( <code>LISTEN</code>)。</p>
+<p>访问此文件以及其他有用信息的另一种方法是使用<code>lsof</code>（用于查看你进程打开的文件，打开文件的进程，进程打开的端口(TCP、UDP)）。它在 macOS 上默认可用，并且可以使用包管理器安装在 Linux 上（如果尚未安装）：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@qianfeng01 pyscript]# lsof -i -n</span><br><span class="line">COMMAND  PID   USER   FD   TYPE DEVICE SIZE/OFF NODE NAME</span><br><span class="line">...</span><br><span class="line">python  1556   root    3u  IPv4  23805      0t0  TCP *:65432 (LISTEN)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>lsof输出各列信息的意义如下：</p>
+<ol>
+<li>​	COMMAND：进程的名称</li>
+<li>​	PID：进程标识符</li>
+<li>​	PPID：父进程标识符（需要指定-R参数）</li>
+<li>​	USER：进程所有者</li>
+<li>​	PGID：进程所属组</li>
+<li>​	FD：文件描述符，应用程序通过文件描述符识别该文件。</li>
+</ol>
+<p>当尝试连接到没有监听套接字的端口时，您会遇到以下常见错误（未启动服务端，仅启动客户端）：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@bain pyscript]# python echo-client.py </span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;echo-client.py&quot;, line 9, in &lt;module&gt;</span><br><span class="line">    s.connect((HOST, PORT))</span><br><span class="line">ConnectionRefusedError: [Errno 111] Connection refused</span><br></pre></td></tr></table></figure>
+
+<p>指定的端口号错误或服务器未运行会出现上面的错误。或者，连接路径中可能存在阻止连接的防火墙，这很容易忘记。还有可能还会看到错误<code>Connection timed out</code>。遇到这种情况需要服务端添加防火墙规则允许客户端连接到服务端的TCP 端口。</p>
+<h1 id="CS通信过程"><a href="#CS通信过程" class="headerlink" title="CS通信过程"></a>CS通信过程</h1><p>现在我们来仔细研究下客户端和服务端到底是如何互相通信的。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220606165635163.png" alt="image-20220606165635163"></p>
+<p>使用<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Localhost">环回</a>接口（IPv4 地址<code>127.0.0.1</code>或 IPv6 地址<code>::1</code>）时，数据是永远不会离开主机或接触外部网络的。在上图中，环回接口是包含在主机内部的。这代表了环回接口的内部传输属性，并表明它的连接和数据传输对于主机来说都是在本地进行的。这就是为什么有时还会听到环回接口和 IP 地址<code>127.0.0.1</code>或<code>::1</code>被称为“localhost”的原因（指向的通信都是主机自身）。</p>
+<p>为了保证安全性以及保证与外部网络的隔离，应用程序会使用环回接口（下图的lo0）与主机上运行的其他进程进行通信。因为它是内部的并且只能从主机内部访问，所以它不会暴露。</p>
+<p>对于应用程序服务器使用的数据库，如果它不是其他服务器使用的数据库，它可能被配置为仅监听环回接口。如果是这种情况，网络上的其他主机将无法连接到它。</p>
+<p>当您在应用程序中使用除<code>127.0.0.1</code>或<code>::1</code>之外的IP地址时，它可能绑定到连接到外部网络的以太网接口（下图的eth0）——这是与本机（localhost）之外其他主机进行通信的网关：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220606171028486.png" alt="image-20220606171028486"></p>
+<p>当与外部主机进行通信时，请小心。外部的网络世界是残酷和危险的，在通信之前请一定要阅读相关安全说明（即使主机为IP地址而不是域名也同样要小心）</p>
+<h1 id="如何处理多个连接"><a href="#如何处理多个连接" class="headerlink" title="如何处理多个连接"></a>如何处理多个连接</h1><p>上面的服务端有许多局限性，最大的一个是它只会服务一个客户端然后就退出了，客户端也是如此。客户端除此之外还有一个额外的问题，就是当客户端使用<code>s.recv()</code>时，它可能只返回一个字节，<code>b&#39;H&#39;</code>来自<code>b&#39;Hello, world&#39;</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># echo-client.py</span></span><br><span class="line"></span><br><span class="line">...</span><br><span class="line">    data = s.recv(bufsize=<span class="number">1024</span>)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>上面使用的<code>bufsize</code>参数表示<strong>每次</strong>接收的来自服务端的最大数据量（示例为1024字节）。</p>
+<p><code>send()</code>方法同样也以这种方式运行。不同的是它的返回值是发送的字节数，并且发送的字节数可能小于数据传入的字节数。我们有必要对此进行检查并且在需要的情况下尽可能多次的调用send方法，以便将数据全部发出。</p>
+<blockquote>
+<p>“应用程序负责检查所有数据是否已发送；如果只传输了部分数据，则应用程序需要尝试传输剩余的数据。” <a target="_blank" rel="noopener" href="https://docs.python.org/3/library/socket.html#socket.socket.send">（引用）</a></p>
+</blockquote>
+<p>在上面的示例中，我们通过使用<code>.sendall()</code>方法来避免检查操作：</p>
+<blockquote>
+<p>“与 send() 不同，此方法持续从字节发送数据，直到所有数据都已发送或发生错误。全部发送成功后返回<code>None</code>。” <a target="_blank" rel="noopener" href="https://docs.python.org/3/library/socket.html#socket.socket.sendall">（引用）</a></p>
+</blockquote>
+<p>我们目前的问题如下：</p>
+<ul>
+<li>如何同时处理多个连接？</li>
+<li>需要多次调用<code>.send()</code>，<code>.recv()</code>直到发送或接收所有数据。（而不是发一次就关闭连接了）</li>
+</ul>
+<p>针对上述的问题，有许多并发方法可以解决。一种流行的方法是使用<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/asyncio.html">异步 I&#x2F;O</a>。<code>asyncio</code>在 Python 3.4 中被引入标准库。一般而言传统的选择是使用线程。</p>
+<p>并发方案很难做到正确的传输数据。实现的时候有许多微妙和细节的地方需要考虑和防范。因为只要有其中一个地方没考虑到，应用程序可能会以你想不到的方式崩溃。</p>
+<p>这并不是要吓大家别去学习和使用并发编程的意思。如果我们的应用程序需要扩展，如果我们需要使用多个处理器或多个内核，并发就是必要的。在本文，我们将使用比线程更传统且更易于理解的东西。我们将使用系统调用的鼻祖方法：<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/selectors.html#selectors.BaseSelector.select"><code>.select()</code></a>.</p>
+<p><code>.select()</code>方法允许我们检查多个套接字上的 I&#x2F;O 完成情况。因此，可以调用<code>.select()</code>查看哪些套接字已准备好读取&#x2F;或写入 I&#x2F;O。在Python里，我们将使用标准库中的<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/selectors.html">选择器</a>(selectors)模块，以便使用最有效的方式实现此功能，并且此模块的使用无需关注代码运行在何种操作系统上：</p>
+<blockquote>
+<p>“selectors模块建立在select原语模块的基础上，并且允许高级和高效的 I&#x2F;O 多路复用。我们鼓励用户使用这个模块，除非他们想要精确控制所使用的操作系统级原语。” <a target="_blank" rel="noopener" href="https://docs.python.org/3/library/selectors.html">（引用）</a></p>
+</blockquote>
+<p>不过，如果使用了<code>.select()</code>方法，我们就不能并行的运行程序了。也就是说，确认是否使用并发编程前，我们需要考虑：1）应用程序在为请求提供服务时需要做什么；2）服务端需要支持的客户端数量。</p>
+<p><a target="_blank" rel="noopener" href="https://docs.python.org/3/library/asyncio.html"><code>asyncio</code></a>使用单线程协作多任务（即协程）和事件循环来管理任务。使用<code>.select()</code>，我们将编写自己的事件循环版本，简单且同步性强。当使用多线程做并发时，我们需要考虑GIL（全局解释器锁）的限制。</p>
+<p>以上都是为了说明使用<code>.select()</code>可能是一个非常好的选择。不要觉得你必须使用<code>asyncio</code>、多线程或最新的异步库等。通常，在网络应用程序中，您的应用程序无论如何都是 I&#x2F;O 密集型的：它可能在本地网络上等待，或者等待网络另一端的端点，或者等待磁盘写入等等。</p>
+<p>如果我们从客户端收到启动 CPU 密集型工作的请求，请查看<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/concurrent.futures.html">concurrent.futures</a>模块。它包含<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/concurrent.futures.html#processpoolexecutor">ProcessPoolExecutor类</a>，它使用一个进程池来异步执行调用。</p>
+<p>如果使用多进程，则操作系统能够安排 Python 代码在多个处理器或内核上并行运行，无需受限于 GIL。</p>
+<h1 id="支持多个连接的Client和Server"><a href="#支持多个连接的Client和Server" class="headerlink" title="支持多个连接的Client和Server"></a>支持多个连接的Client和Server</h1><p>在接下来的两节里，我们将使用从<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/selectors.html">选择器</a>模块创建的<code>selector</code>对象创建能处理多个连接的服务器和客户端程序。</p>
+<h2 id="多连接服务端"><a href="#多连接服务端" class="headerlink" title="多连接服务端"></a>多连接服务端</h2><p>我们先看下支持多连接的服务端程序该怎么写。第一步，先建立一个监听套接字。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># multiconn-server.py</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> selectors</span><br><span class="line"><span class="keyword">import</span> types</span><br><span class="line"></span><br><span class="line">sel = selectors.DefaultSelector()</span><br><span class="line"></span><br><span class="line"><span class="comment"># ...</span></span><br><span class="line"></span><br><span class="line">host, port = sys.argv[<span class="number">1</span>], <span class="built_in">int</span>(sys.argv[<span class="number">2</span>])</span><br><span class="line">lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">lsock.bind((host, port))</span><br><span class="line">lsock.listen()</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Listening on <span class="subst">&#123;(host, port)&#125;</span>&quot;</span>)</span><br><span class="line">lsock.setblocking(<span class="literal">False</span>)</span><br><span class="line">sel.register(lsock, selectors.EVENT_READ, data=<span class="literal">None</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这个服务器和单连接服务器的最大区别是调用了<code>lsock.setblocking(False)</code>以非阻塞模式配置套接字。对此套接字的调用将不再阻塞。当它与<code>sel.select()</code>一起使用时，如下所示，您可以等待一个或多个套接字上的事件，然后在套接字准备好时读取和写入数据。</p>
+<p><code>sel.register()</code>为感兴趣的<code>sel.select()</code>事件注册要被监视的套接字。对于监听套接字，需要读取事件： <code>selectors.EVENT_READ</code>。</p>
+<p>要将想要的任意数据与套接字一起存储，需要使用<code>data</code>. 它将与<code>.select()</code>同时返回。我们利用<code>data</code>跟踪套接字上发送和接收的内容。</p>
+<p>接下来是事件循环：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># multiconn-server.py</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ...</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        events = sel.select(timeout=<span class="literal">None</span>)</span><br><span class="line">        <span class="keyword">for</span> key, mask <span class="keyword">in</span> events:</span><br><span class="line">            <span class="keyword">if</span> key.data <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">                accept_wrapper(key.fileobj)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                service_connection(key, mask)</span><br><span class="line"><span class="keyword">except</span> KeyboardInterrupt:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Caught keyboard interrupt, exiting&quot;</span>)</span><br><span class="line"><span class="keyword">finally</span>:</span><br><span class="line">    sel.close()</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://docs.python.org/3/library/selectors.html#selectors.BaseSelector.select"><code>sel.select(timeout=None)</code></a> 会一直阻塞，直到有套接字准备好进行 I&#x2F;O。它返回一个元组组成的列表，每个套接字对应一个元组。每个元组包含 一个<code>key</code>和 一个 <code>mask</code>。<code>key</code>是一个<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/selectors.html#selectors.SelectorKey">SelectorKey 。</a>的命名元组（namedtuple），它包括了一个fileobj属性：key.fileobj——这是一个套接字对象；还包括了一个准备好的操作的事件<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Mask_(computing)">掩码</a>。</p>
+<p>events &#x3D; [((fileobj1, data1), mask1), (key2, mask2), …]</p>
+<p>如果<code>key.data</code>为<code>None</code>，那么说明它来自监听套接字，我们需要接受连接。此时会调用<code>accept_wrapper()</code>函数来获取新的套接字对象并将其注册到选择器。函数内容在后面会展开。</p>
+<p>如果<code>key.data</code>不为 <code>None</code>，那么说明它是一个已被接受的客户端套接字，此时需要为它提供服务。<code>service_connection()</code>会接收<code>key</code>and<code>mask</code>作为参数调用。</p>
+<p>accept_wrapper()函数内容如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># multiconn-server.py</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ...</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">accept_wrapper</span>(<span class="params">sock</span>):</span><br><span class="line">    conn, addr = sock.accept()  <span class="comment"># Should be ready to read</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Accepted connection from <span class="subst">&#123;addr&#125;</span>&quot;</span>)</span><br><span class="line">    conn.setblocking(<span class="literal">False</span>)</span><br><span class="line">    data = types.SimpleNamespace(addr=addr, inb=<span class="string">b&quot;&quot;</span>, outb=<span class="string">b&quot;&quot;</span>)</span><br><span class="line">    events = selectors.EVENT_READ | selectors.EVENT_WRITE</span><br><span class="line">    sel.register(conn, events, data=data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ...</span></span><br></pre></td></tr></table></figure>
+
+<p>因为监听套接字是为事件注册的<code>selectors.EVENT_READ</code>，所以它应该可以读取了。先调用<code>sock.accept()</code>然后调用<code>conn.setblocking(False)</code>将套接字置于<em>非阻塞</em>模式。</p>
+<p>请记住，这是此阶段服务端的主要目标，因为我们不希望它<a target="_blank" rel="noopener" href="https://realpython.com/python-sockets/#blocking-calls">阻塞</a>。如果它阻塞，则整个服务器将停止，直到它返回。这意味着即使服务器没有处于活动状态，其他套接字也会等待。我们不希望服务器处于可怕的“挂起”状态。</p>
+<p>接下来，我们用<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/types.html#types.SimpleNamespace"><code>SimpleNamespace</code></a>创建一个对象，用于包含所需的数据以及套接字. 因为我们想知道客户端连接何时准备好进行读写，所以这两个事件都使用<a target="_blank" rel="noopener" href="https://realpython.com/python-bitwise-operators/#bitwise-or">按位 OR</a>运算符设置。</p>
+<p>然后将<code>events</code>掩码、套接字和数据对象传递给<code>sel.register()</code>.</p>
+<p>现在看一下客户端连接准备好后<code>service_connection()</code>是如何处理的：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># multiconn-server.py</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ...</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">service_connection</span>(<span class="params">key, mask</span>):</span><br><span class="line">    sock = key.fileobj</span><br><span class="line">    data = key.data</span><br><span class="line">    <span class="keyword">if</span> mask &amp; selectors.EVENT_READ:</span><br><span class="line">        recv_data = sock.recv(<span class="number">1024</span>)  <span class="comment"># Should be ready to read</span></span><br><span class="line">        <span class="keyword">if</span> recv_data:</span><br><span class="line">            data.outb += recv_data</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;Closing connection to <span class="subst">&#123;data.addr&#125;</span>&quot;</span>)</span><br><span class="line">            sel.unregister(sock)</span><br><span class="line">            sock.close()</span><br><span class="line">    <span class="keyword">if</span> mask &amp; selectors.EVENT_WRITE:</span><br><span class="line">        <span class="keyword">if</span> data.outb:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;Echoing <span class="subst">&#123;data.outb!r&#125;</span> to <span class="subst">&#123;data.addr&#125;</span>&quot;</span>)</span><br><span class="line">            sent = sock.send(data.outb)  <span class="comment"># Should be ready to write</span></span><br><span class="line">            data.outb = data.outb[sent:]</span><br><span class="line"></span><br><span class="line"><span class="comment"># ...</span></span><br></pre></td></tr></table></figure>
+
+<p>这是简单多连接服务端的核心。<code>key</code>是<code>namedtuple</code>从<code>.select()</code>包含套接字对象（<code>fileobj</code>）和数据对象的返回值。<code>mask</code>包含准备好的事件。</p>
+<p>如果套接字已准备好读取，则<code>mask &amp; selectors.EVENT_READ</code>计算结果为<code>True</code>，因此<code>sock.recv()</code>被调用。读取的任何数据都会附加到<code>data.outb</code>后面，以便以后发送。</p>
+<p>注意<code>else</code>检查是否没有收到数据的块，如果没有收到数据，这意味着客户端已经关闭了他们的套接字，所以服务器也应该这样做。但是不要忘记在关闭之前调用<code>sel.unregister()</code>，如此套接字才能不再被<code>.select()</code>监控。</p>
+<p>当套接字准备好写入时（对于一个健康的套接字来说应该总是如此），任何接收到的数据都会存储在<code>data.outb</code>中并使用<code>sock.send()</code>. 发送到客户端。然后从发送缓冲区中删除发送的字节。</p>
+<p><code>.send()</code>方法返回发送的字节数。然后可以将此数字作为<a target="_blank" rel="noopener" href="https://realpython.com/python-strings/#string-slicing">切片</a>用在<code>.outb</code>缓冲区上，以丢弃发送的字节。</p>
+<h2 id="多连接客户端"><a href="#多连接客户端" class="headerlink" title="多连接客户端"></a>多连接客户端</h2><p>现在看看多连接客户端，<code>multiconn-client.py</code>. 它与服务端非常相似，但它不是监听连接，而是通过<code>start_connections()</code>的方式启动连接：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># multiconn-client.py</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> selectors</span><br><span class="line"><span class="keyword">import</span> types</span><br><span class="line"></span><br><span class="line">sel = selectors.DefaultSelector()</span><br><span class="line">messages = [<span class="string">b&quot;Message 1 from client.&quot;</span>, <span class="string">b&quot;Message 2 from client.&quot;</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">start_connections</span>(<span class="params">host, port, num_conns</span>):</span><br><span class="line">    server_addr = (host, port)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, num_conns):</span><br><span class="line">        connid = i + <span class="number">1</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;Starting connection <span class="subst">&#123;connid&#125;</span> to <span class="subst">&#123;server_addr&#125;</span>&quot;</span>)</span><br><span class="line">        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">        sock.setblocking(<span class="literal">False</span>)</span><br><span class="line">        sock.connect_ex(server_addr)</span><br><span class="line">        events = selectors.EVENT_READ | selectors.EVENT_WRITE</span><br><span class="line">        data = types.SimpleNamespace(</span><br><span class="line">            connid=connid,</span><br><span class="line">            msg_total=<span class="built_in">sum</span>(<span class="built_in">len</span>(m) <span class="keyword">for</span> m <span class="keyword">in</span> messages),</span><br><span class="line">            recv_total=<span class="number">0</span>,</span><br><span class="line">            messages=messages.copy(),</span><br><span class="line">            outb=<span class="string">b&quot;&quot;</span>,</span><br><span class="line">        )</span><br><span class="line">        sel.register(sock, events, data=data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ...</span></span><br></pre></td></tr></table></figure>
+
+<p><code>num_conns</code>从命令行读取，是要创建到服务端的连接数。同服务端一样，每个套接字都设置为非阻塞模式。</p>
+<p>这里使用<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/socket.html#socket.socket.connect_ex"><code>.connect_ex()</code></a>而不是<code>.connect()</code>的原因是<code>.connect()</code>会立即引发<code>BlockingIOError</code>异常。而<code>.connect_ex()</code>方法会返回一个错误<em>指示符</em>, <code>errno.EINPROGRESS</code>，而不是引发会干扰正在进行的连接的异常。一旦连接完成，套接字就可以读写了，并由<code>.select()</code>.返回</p>
+<p>设置套接字后，要使用套接字存储的数据是使用<code>SimpleNamespace</code>. 因为每个连接都会调用<code>socket.send()</code>和修改列表，所以客户端将发送到服务器的消息被<code>messages.copy()</code>复制使用。跟踪客户端需要发送、已发送和已接收的所有内容，包括消息中的总字节数，都存储在 object 中<code>data</code>。</p>
+<p>查看服务器<code>service_connection()</code>对客户端版本所做的更改:</p>
+<figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">def service_connection(key, mask):</span><br><span class="line">     sock = key.fileobj</span><br><span class="line">     data = key.data</span><br><span class="line">     if mask &amp; selectors.EVENT_READ:</span><br><span class="line">         recv_data = sock.recv(1024)  # Should be ready to read</span><br><span class="line">         if recv_data:</span><br><span class="line"><span class="deletion">-            data.outb += recv_data</span></span><br><span class="line"><span class="addition">+            print(f&quot;Received &#123;recv_data!r&#125; from connection &#123;data.connid&#125;&quot;)</span></span><br><span class="line"><span class="addition">+            data.recv_total += len(recv_data)</span></span><br><span class="line"><span class="deletion">-        else:</span></span><br><span class="line"><span class="deletion">-            print(f&quot;Closing connection &#123;data.connid&#125;&quot;)</span></span><br><span class="line"><span class="addition">+        if not recv_data or data.recv_total == data.msg_total:</span></span><br><span class="line"><span class="addition">+            print(f&quot;Closing connection &#123;data.connid&#125;&quot;)</span></span><br><span class="line">             sel.unregister(sock)</span><br><span class="line">             sock.close()</span><br><span class="line">     if mask &amp; selectors.EVENT_WRITE:</span><br><span class="line"><span class="addition">+        if not data.outb and data.messages:</span></span><br><span class="line"><span class="addition">+            data.outb = data.messages.pop(0)</span></span><br><span class="line">         if data.outb:</span><br><span class="line"><span class="deletion">-            print(f&quot;Echoing &#123;data.outb!r&#125; to &#123;data.addr&#125;&quot;)</span></span><br><span class="line"><span class="addition">+            print(f&quot;Sending &#123;data.outb!r&#125; to connection &#123;data.connid&#125;&quot;)</span></span><br><span class="line">             sent = sock.send(data.outb)  # Should be ready to write</span><br><span class="line">             data.outb = data.outb[sent:]</span><br></pre></td></tr></table></figure>
+
+
+
+<p>客户端跟踪它从服务器接收到的字节数，以便它可以关闭它的连接端。当服务器检测到这一点时，它也会关闭它的连接端。</p>
+<p>请注意，通过这样做，服务器依赖于表现良好的客户端：服务器希望客户端在完成发送消息后<em>关闭其连接端。</em>如果客户端没有关闭，服务器将保持连接打开。在实际应用程序中，您可能希望通过实施<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Timeout_(computing)">超时</a>来防止客户端连接在一定时间后不发送请求时累积，从而在服务器中防止这种情况。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513103521.png" alt="Bain 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/20220513103454.png" alt="Bain 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>Bain
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://bainningking.github.io/2022/06/02/20220602_Python%E4%B8%AD%E7%9A%84socket%E7%BC%96%E7%A8%8B/" title="python中的socket编程">https://bainningking.github.io/2022/06/02/20220602_Python中的socket编程/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/socket/" rel="tag"># socket</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/05/30/20220527_program_Python%E7%9A%84%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E5%92%8C%E4%BD%9C%E7%94%A8%E5%9F%9F/" rel="prev" title="Python的命名空间和作用域">
+                  <i class="fa fa-chevron-left"></i> Python的命名空间和作用域
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/06/28/20220628_AIOps%E4%B8%AD%E7%9A%84%E6%97%B6%E5%BA%8F%E6%95%B0%E6%8D%AE%E5%BA%94%E7%94%A8/" rel="next" title="AIOps中的时序数据应用">
+                  AIOps中的时序数据应用 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Bain</span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"waline-server-kohl.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":true,"pageview":false,"placeholder":"欢迎参与讨论呀","avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"visitor":true,"comment_count":true,"requiredFields":[],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2022/06/02/20220602_Python%E4%B8%AD%E7%9A%84socket%E7%BC%96%E7%A8%8B/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

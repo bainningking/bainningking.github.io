@@ -31,7 +31,7 @@
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220530192110203.png">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/bainningking/pic_repo@main/img/image-20220530195031406.png">
 <meta property="article:published_time" content="2022-05-30T11:30:00.000Z">
-<meta property="article:modified_time" content="2022-05-30T12:24:11.706Z">
+<meta property="article:modified_time" content="2022-06-02T07:16:59.481Z">
 <meta property="article:author" content="Bain">
 <meta property="article:tag" content="programiz">
 <meta property="article:tag" content="namespace,scope">
@@ -164,18 +164,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-count">8</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">10</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -250,9 +250,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2022-05-30 19:30:00 / 修改时间：20:24:11" itemprop="dateCreated datePublished" datetime="2022-05-30T19:30:00+08:00">2022-05-30</time>
+      <time title="创建时间：2022-05-30 19:30:00" itemprop="dateCreated datePublished" datetime="2022-05-30T19:30:00+08:00">2022-05-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-06-02 15:16:59" itemprop="dateModified" datetime="2022-06-02T15:16:59+08:00">2022-06-02</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -321,6 +327,8 @@
 <p>例如，当我们进行赋值时：<code>a = 2</code>，<code>2</code>是一个存储在内存中的对象，而a是我们与之关联的名称。我们可以通过内置函数<code>id()</code>获取某个对象在内存中的地址。让我们看看它的使用范例。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="number">2</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;id(2) =&#x27;</span>, <span class="built_in">id</span>(<span class="number">2</span>))</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;id(a) =&#x27;</span>, <span class="built_in">id</span>(a))</span><br></pre></td></tr></table></figure>
 
+<span id="more"></span>
+
 <p>输出：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">id</span>(<span class="number">2</span>) = <span class="number">140728274186016</span></span><br><span class="line"><span class="built_in">id</span>(a) = <span class="number">140728274186016</span></span><br></pre></td></tr></table></figure>
 
@@ -382,7 +390,7 @@
 
 <p>在这里，由于使用了关键字<code>global</code>，因此所有的引用和赋值都是针对全局变量<code>a</code>而进行的。</p>
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文对python中变量的命名空间和作用域进行了讲解和示例 ，希望对你有帮助~</p>
-<p>本文大量参照了<a target="_blank" rel="noopener" href="https://www.programiz.com/python-programming/namespace%E7%9A%84%E5%86%85%E5%AE%B9%EF%BC%8C%E7%9B%AE%E7%9A%84%E6%98%AF%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB%EF%BC%8C%E5%A6%82%E6%9C%89%E4%BE%B5%E6%9D%83%EF%BC%8C%E8%AF%B7%E8%81%94%E7%B3%BB%E6%88%91%E5%88%A0%E9%99%A4%E3%80%82">https://www.programiz.com/python-programming/namespace的内容，目的是技术分享，如有侵权，请联系我删除。</a></p>
+<p>本文大量参照了<a target="_blank" rel="noopener" href="https://www.programiz.com/python-programming/namespace%E3%80%82">https://www.programiz.com/python-programming/namespace。</a></p>
 <p>希望大家能有所收获~</p>
 
     </div>
@@ -441,6 +449,9 @@
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/2022/06/02/20220602_Python%E4%B8%AD%E7%9A%84socket%E7%BC%96%E7%A8%8B/" rel="next" title="python中的socket编程">
+                  python中的socket编程 <i class="fa fa-chevron-right"></i>
+                </a>
             </div>
           </div>
     </footer>
